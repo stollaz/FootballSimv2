@@ -1,0 +1,16 @@
+S:\Summer Projects\Footballv2\bin\Debug\net5.0\Footballv2.exe
+S:\Summer Projects\Footballv2\bin\Debug\net5.0\Footballv2.deps.json
+S:\Summer Projects\Footballv2\bin\Debug\net5.0\Footballv2.runtimeconfig.json
+S:\Summer Projects\Footballv2\bin\Debug\net5.0\Footballv2.runtimeconfig.dev.json
+S:\Summer Projects\Footballv2\bin\Debug\net5.0\Footballv2.dll
+S:\Summer Projects\Footballv2\bin\Debug\net5.0\ref\Footballv2.dll
+S:\Summer Projects\Footballv2\bin\Debug\net5.0\Footballv2.pdb
+S:\Summer Projects\Footballv2\obj\Debug\net5.0\Footballv2.csproj.AssemblyReference.cache
+S:\Summer Projects\Footballv2\obj\Debug\net5.0\Footballv2.GeneratedMSBuildEditorConfig.editorconfig
+S:\Summer Projects\Footballv2\obj\Debug\net5.0\Footballv2.AssemblyInfoInputs.cache
+S:\Summer Projects\Footballv2\obj\Debug\net5.0\Footballv2.AssemblyInfo.cs
+S:\Summer Projects\Footballv2\obj\Debug\net5.0\Footballv2.csproj.CoreCompileInputs.cache
+S:\Summer Projects\Footballv2\obj\Debug\net5.0\Footballv2.dll
+S:\Summer Projects\Footballv2\obj\Debug\net5.0\ref\Footballv2.dll
+S:\Summer Projects\Footballv2\obj\Debug\net5.0\Footballv2.pdb
+S:\Summer Projects\Footballv2\obj\Debug\net5.0\Footballv2.genruntimeconfig.cache
