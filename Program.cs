@@ -761,6 +761,7 @@ namespace Footballv2
 
     class Program{
 
+        public static string VERSION = "a.2.0";
         public static List<string> DATA = new List<string> {
             "NON_PEN_GOALS",
             "NON_PEN_XG",
@@ -1114,7 +1115,7 @@ namespace Footballv2
         static int StartMenu(){
             int option = 1;
 
-            Console.WriteLine("\nWelcome to Bad Football Simulator!\nOptions: ");
+            Console.WriteLine("\nWelcome to Bad Football Simulator v. " + VERSION + "!\nOptions: ");
             Console.WriteLine("0. Simulate Random Season"); // SimulateSeason()
             Console.WriteLine("1. Generate Random Teams"); // SetupTeams()
             Console.WriteLine("2. Load Teams"); // LoadTeam()
