@@ -67,7 +67,7 @@ and these attributes dictate how a player performs. [...]
     - Move step-by-step through each game in the season
     - Transfer of players between teams [**]
     - View more detailed statistics of players in the team
-    
+- Conversion of the game to use a UI, or to integrate with Unity to create a better interface [*]
     
  [*] - Ambitious
  [**] - Very Ambitious
