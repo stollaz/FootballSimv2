@@ -32,6 +32,7 @@ and these attributes dictate how a player performs. [...]
   - Within these teams, various statistical information about the players can be visualised
   - Teams can be saved to a file for use later
   - Games can be simulated between the two teams, either in step-by-step mode, or skip-to-result mode
+    - After the game, user has the option to display goalscorers, display game stats (posession etc.), display player ratings, or simulate again
 - Ability to load two saved teams for use as above
 - Ability to simulate an entirely random season of a Premier League style football league
   - 20 randomly generated teams player each other twice each
