@@ -47,6 +47,8 @@ and these attributes dictate how a player performs. [...]
 ## Intended Future Features
 - General Simulation
   - More realistic use of attributes to perform actions, e.g. to reduce the number of goals scored overall
+    - Note: The distribution of points and goals is much more realistic in a completely random season versus using real data
+    - This suggests a problem with the using of the data / its conversion to stats, rather than a simulation problem, but both should be investigated
   - Customisable time interval in step-by-step match mode
   - Ability to use a loaded team versus a random team
   - Easier to view stats, and more of them
