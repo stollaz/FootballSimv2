@@ -71,3 +71,25 @@ and these attributes dictate how a player performs. [...]
     
  [*] - Ambitious
  [**] - Very Ambitious
+ 
+ ---
+ 
+ 
+## Changelog v. b.2.2021.8.13.0
+- Improved algorithm to generate a "Best XI"
+  - Now only players in the correct positions will be selected for those positions
+    - This means no more RBs playing at CB, etc.
+  - In the case of a team having no players for a certain position, a more generic position will be looked for instead
+    - e.g. If a team has no RBs, a player marked as DF (generic defender) may be selected instead
+    - If no suitable replacement is found, a placeholder empty player is returned, however this never happens in testing
+- Slightly altered some of the simulation algorithms to correctly use new stats
+  
+### Next Steps
+  
+  - Be less strict on formation - currently a formation of 4-3-3 with a midfield of CM-AM-CM is forced  
+    - Allow the midfield 3 to have more configuration, such as DM-AM-DM, DM-CM-DM, etc.
+      - This could be based on available players, or simply on which configuration has the highest rating
+      - Alternatively instead of basing on preset configurations, for each position the game could check all possible midfield positions
+        - The best 3 midfield players would be selected (excluding wingers, as they fit in as forwards)
+    - As another step, allow alternate formations (e.g. 4-4-2, 4-2-3-1, 5-2-3, 3-4-3 etc.)
+  - Further improve conversion from data to in game statistics, as well as simulation parameters
