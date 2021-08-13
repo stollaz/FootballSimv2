@@ -471,6 +471,138 @@ namespace Footballv2
             rating = ovr;
         }
 
+        private Player _GetBestPlayer(Position Pos, List<Player> OrderedList){
+            Player ret = new Player("",0,0,0,0,0,0,0,0);
+            bool pFound = false;
+            int i = 0;
+            switch (Pos){
+                case Position.LB:
+                    while (!pFound && i < OrderedList.Count){
+                        Player p2 = OrderedList[i];
+                        if (p2.Position == Position.LB || p2.Position2 == Position.LB){
+                            pFound = true;
+                            ret = OrderedList[i];
+                            //ret.Number = 2;
+                            //OrderedList[i].Number = 2;   // Left Back
+                            //bestXI[1] = OrderedList[i];
+                        }
+                        else{
+                            i++;
+                        }
+                    }
+                    if (!pFound){
+                        i = 0;
+                        while (!pFound && i < OrderedList.Count){
+                            Player p2 = OrderedList[i];
+                            if (p2.Position == Position.DF || p2.Position2 == Position.DF){
+                                pFound = true;
+                                ret = OrderedList[i];
+                            }
+                            else{
+                                i++;
+                            }
+                        }
+                    }
+                    break;
+                case Position.RB:
+                    while (!pFound && i < OrderedList.Count){
+                        Player p2 = OrderedList[i];
+                        if (p2.Position == Position.RB || p2.Position2 == Position.RB){
+                            pFound = true;
+                            ret = OrderedList[i];
+                        }
+                        else{
+                            i++;
+                        }
+                    }
+                    if (!pFound){
+                        i = 0;
+                        while (!pFound && i < OrderedList.Count){
+                            Player p2 = OrderedList[i];
+                            if (p2.Position == Position.DF || p2.Position2 == Position.DF){
+                                pFound = true;
+                                ret = OrderedList[i];
+                            }
+                            else{
+                                i++;
+                            }
+                        }
+                    }
+                    break;
+                case Position.CB:
+                    while (!pFound && i < OrderedList.Count){
+                        Player p2 = OrderedList[i];
+                        if (p2.Position == Position.CB || p2.Position2 == Position.CB){
+                            pFound = true;
+                            ret = OrderedList[i];
+                        }
+                        else{
+                            i++;
+                        }
+                    }
+                    if (!pFound){
+                        i = 0;
+                        while (!pFound && i < OrderedList.Count){
+                            Player p2 = OrderedList[i];
+                            if (p2.Position == Position.DF || p2.Position2 == Position.DF){
+                                pFound = true;
+                                ret = OrderedList[i];
+                            }
+                            else{
+                                i++;
+                            }
+                        }
+                    }
+                    break;
+            }
+
+            return ret;
+        }
+
+        private Player GetBestPlayer(Position Pos, List<Player> OrderedList){
+            Player ret = new Player("",0,0,0,0,0,0,0,0); // Create temporary empty player
+            bool pFound = false;
+            int i = 0;
+            
+            while (!pFound && i < OrderedList.Count){   // Search the list for the "best" player that plays the desired position
+                Player p = OrderedList[i];  // Assign current player to temporary player obj
+                if (p.Position == Pos || p.Position2 == Pos){   // Check if either their primary or secondary position matches
+                    pFound = true;  // If so, mark found
+                    ret = p; // Store found player in object to be returned
+                }
+                else{ i++; } // Otherwise check the next player
+            }
+            if (!pFound){ // If the desired position does not exist in the list, try again but with a general check for DF / MF / FW
+                i = 0;
+                while (!pFound && i < OrderedList.Count){
+                    Player p = OrderedList[i];
+                    if (Pos == Position.LB || Pos == Position.RB || Pos == Position.CB){ // Generic check for defenders
+                        if (p.Position == Position.DF || p.Position2 == Position.DF){
+                        pFound = true;
+                        ret = p;
+                        }
+                        else{ i++; }
+                    }
+                    else if (Pos == Position.LM || Pos == Position.RM || Pos == Position.CM || Pos == Position.AM || Pos == Position.DM){ // Generic check for midfielders
+                        if (p.Position == Position.MF || p.Position2 == Position.MF){
+                        pFound = true;
+                        ret = p;
+                        }
+                        else{ i++; }
+                    }
+                    else if (Pos == Position.ST || Pos == Position.LW || Pos == Position.RW){ // Generic check for forwards
+                        if (p.Position == Position.FW || p.Position2 == Position.FW){
+                        pFound = true;
+                        ret = p;
+                        }
+                        else{ i++; }
+                    }
+                }
+            }
+
+            return ret;
+        }
+
         // This is a very crude way of generating a "Best XI" and will almost certainly not feature the best possible XI for each team, however it's a start and it can easily be worked on
         // TODO: Base each position on its own set of criteria, e.g.:
         //          - Wingers are the players with the best dribbling and assisting
@@ -495,39 +627,118 @@ namespace Footballv2
             List<Player> OrderedMFS = _MFS.OrderByDescending(p=>p.PositionalOverall).ThenByDescending(p=>p.Assisting).ToList();
             List<Player> OrderedFWS = _FWS.OrderByDescending(p=>p.PositionalOverall).ThenByDescending(p=>p.Finishing).ToList();
 
-            OrderedGKS[0].Number = 1;
+            OrderedGKS[0].Number = 1;   // Goalkeeper
             bestXI[0] = OrderedGKS[0];
 
-            OrderedDFS[0].Number = 2;
-            bestXI[1] = OrderedDFS[0];
-            OrderedDFS[1].Number = 3;
-            bestXI[2] = OrderedDFS[1];
-            OrderedDFS[2].Number = 4;
+            /*bool pFound = false;
+            int i = 0;
+            while (pFound || i <= OrderedDFS.Count){
+                Player p2 = OrderedDFS[i];
+                if (p2.Position == Position.LB || p2.Position2 == Position.LB){
+                    pFound = true;
+                    OrderedDFS[i].Number = 2;   // Left Back
+                    bestXI[1] = OrderedDFS[i];
+                }
+                else{
+                    i++;
+                }
+            }
+
+            pFound = false;
+            i = 0;
+            while (pFound || i <= OrderedDFS.Count){
+                Player p2 = OrderedDFS[i];
+                if (p2.Position == Position.RB || p2.Position2 == Position.RB){
+                    pFound = true;
+                    OrderedDFS[i].Number = 3;   // Right Back
+                    bestXI[2] = OrderedDFS[i];
+                }
+                else{
+                    i++;
+                }
+            }*/
+            
+            /*OrderedDFS[2].Number = 4;   // Centre Back
             bestXI[3] = OrderedDFS[2];
-            OrderedDFS[3].Number = 5;
+            OrderedDFS[3].Number = 5;   // Centre Back
             bestXI[4] = OrderedDFS[3];
 
-            OrderedMFS[0].Number = 6;
+            OrderedMFS[0].Number = 6;   // Centre Mid / Defensive Mid
             bestXI[5] = OrderedMFS[0];
-            OrderedMFS[1].Number = 8;
+            OrderedMFS[1].Number = 8;   // Centre Mid / Defensive Mid
             bestXI[7] = OrderedMFS[1];
-            OrderedMFS[2].Number = 10;
+            OrderedMFS[2].Number = 10;  // Attacking Mid / Defensive Mid
             bestXI[9] = OrderedMFS[2];
 
-            OrderedFWS[0].Number = 9;
+            OrderedFWS[0].Number = 9;   // Striker
             bestXI[8] = OrderedFWS[0];
 
             if (OrderedFWS.Count < 2){
-                OrderedMFS[3].Number = 7;
+                OrderedMFS[3].Number = 7;   // Left Winger
                 BestXI[6] = OrderedMFS[3];
-                OrderedMFS[4].Number = 11;
+                OrderedMFS[4].Number = 11;  // Right Winger
                 BestXI[10] = OrderedMFS[4];
             }
             else{
-                OrderedFWS[1].Number = 7;
+                OrderedFWS[1].Number = 7;   // Left Winger
                 bestXI[6] = OrderedFWS[1];
-                OrderedFWS[2].Number = 11;
+                OrderedFWS[2].Number = 11;  // Right Winger
                 bestXI[10] = OrderedFWS[2];
+            }*/
+
+            // TODO: Maybe remove the found player from the list to avoid duplicates
+
+            bestXI[1] = GetBestPlayer(Position.LB, OrderedDFS); // LB
+            bestXI[1].Number = 2;
+            OrderedDFS.Remove(bestXI[1]);
+
+            bestXI[2] = GetBestPlayer(Position.RB, OrderedDFS); // RB
+            bestXI[2].Number = 3;
+            OrderedDFS.Remove(bestXI[2]);
+
+            bestXI[3] = GetBestPlayer(Position.CB, OrderedDFS); // CB
+            bestXI[3].Number = 4;
+            OrderedDFS.Remove(bestXI[3]);
+
+            bestXI[4] = GetBestPlayer(Position.CB, OrderedDFS); // CB
+            bestXI[4].Number = 5;
+            OrderedDFS.Remove(bestXI[4]);
+
+            //--
+
+            bestXI[5] = GetBestPlayer(Position.CM, OrderedMFS); // CM
+            bestXI[5].Number = 6;
+            OrderedMFS.Remove(bestXI[5]);
+
+            bestXI[7] = GetBestPlayer(Position.CM, OrderedMFS); // CM
+            bestXI[7].Number = 8;
+            OrderedMFS.Remove(bestXI[8]);
+
+            bestXI[9] = GetBestPlayer(Position.AM, OrderedMFS); // AM
+            bestXI[9].Number = 10;
+            OrderedMFS.Remove(bestXI[10]);
+
+            bestXI[8] = GetBestPlayer(Position.ST, OrderedFWS); // ST
+            OrderedFWS[0].Number = 9;   // Striker
+            OrderedFWS.Remove(bestXI[8]);
+
+            if (OrderedFWS.Count < 2){  // If not enough forwards
+                BestXI[6] = GetBestPlayer(Position.LM, OrderedMFS);
+                BestXI[6].Number = 7;   // LW
+                OrderedMFS.Remove(bestXI[6]);
+
+                BestXI[10] = GetBestPlayer(Position.RM, OrderedMFS);
+                BestXI[10].Number = 11;  // RW
+                OrderedMFS.Remove(bestXI[10]);
+            }
+            else{
+                BestXI[6] = GetBestPlayer(Position.LW, OrderedFWS);
+                BestXI[6].Number = 7;   // LW
+                OrderedFWS.Remove(bestXI[6]);
+
+                BestXI[10] = GetBestPlayer(Position.RW, OrderedFWS);
+                BestXI[10].Number = 11;  // RW
+                OrderedFWS.Remove(bestXI[10]);
             }
         }
 
@@ -761,7 +972,7 @@ namespace Footballv2
 
     class Program{
 
-        public static string VERSION = "a.2.0";
+        public static string VERSION = "a.2.2021.8.13.0";
         public static List<string> DATA = new List<string> {
             "NON_PEN_GOALS",
             "NON_PEN_XG",
@@ -2081,7 +2292,7 @@ namespace Footballv2
         static bool AttemptPass(Player p1, Player p2, Player p3, bool show = true){
             Random rand = new Random(0);
 
-            double passchance = Sigmoid(Math.Max(p1.Passing, p2.Passing), p3.Tackling, -0.03, -0.5); // https://www.desmos.com/calculator/kn9tpwdan5
+            double passchance = Sigmoid(Math.Max(p1.Passing, p2.Passing), Math.Max(p3.Tackling,p3.GoalPrevention), -0.03, -0.5); // https://www.desmos.com/calculator/kn9tpwdan5
             double randnum = rand.NextDouble();
             if (randnum < passchance){
                 if (show) Console.WriteLine("> The pass was successful.");
