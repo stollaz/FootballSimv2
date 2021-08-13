@@ -93,3 +93,5 @@ and these attributes dictate how a player performs. [...]
         - The best 3 midfield players would be selected (excluding wingers, as they fit in as forwards)
     - As another step, allow alternate formations (e.g. 4-4-2, 4-2-3-1, 5-2-3, 3-4-3 etc.)
   - Further improve conversion from data to in game statistics, as well as simulation parameters
+  - Allow viewing of lineups after season simulation
+  - Implement advanced statistics for teams and players
