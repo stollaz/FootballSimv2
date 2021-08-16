@@ -53,6 +53,9 @@ and these attributes dictate how a player performs. [...]
   - Ability to use a loaded team versus a random team
   - Easier to view stats, and more of them
   - Use player positions more effectively and realistically
+  - Simulate games based on passages of play rather than "an action every 3 minutes"
+    - Use some algorithm based on team stats etc to determine the likelihood of a team attempting an action (slow build up, counter attack, set peice, etc.) and how long to wait
+      - Could use these team stats to assign values to teams e.g. aggression etc. 
 - Season Simulation
   - More detailed statistics, such as top scorers, most clean sheets, etc.
   - Detailed individual statistics for all players, e.g. goals scored, pass percentage, number of cards, etc.
