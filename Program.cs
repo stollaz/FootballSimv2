@@ -970,6 +970,34 @@ namespace Footballv2
         }
     }
 
+    class GameWeek{
+        private List<string> games; // Store list of games, crudely as a string for now, but should change this eventually, e.g. to a Tuple of RotatableTeam?
+        public List<string> Games{
+            get { return games; }
+            set { games = value; }
+        }
+
+        private int weekNum; // Store weeknum as an int, for flavour
+        public int WeekNum{
+            get { return weekNum; }
+            set { weekNum = value; }
+        }
+
+        public void AddGame(string s){
+            games.Add(s);
+        }
+
+        public void Shuffle()   // Quick solution to shuffle a list to apply an extra layer of visual randomness
+        {  
+            games = games.OrderBy(x => Guid.NewGuid()).ToList();
+        }
+
+        public GameWeek(int n){
+            weekNum = n;
+            games = new List<string>();
+        }
+    }
+
     class Program{
 
         public static string VERSION = "a.2.2021.8.13.0";
@@ -1079,6 +1107,9 @@ namespace Footballv2
                     case 3:
                         csv_to_stats();
                         break;
+                    case 4:
+                        TestCombinations();
+                        break;
                     case 9:
                         System.Environment.Exit(0);
                         break;
@@ -1092,6 +1123,39 @@ namespace Footballv2
             
 
             //Console.WriteLine(GenerateNormal(50,25)); // roughly a number centred around 50 that is likely to be between 0 and 100
+        }
+
+        static void TestCombinations(){
+            List<int> teams = new List<int>() {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}; // List of teams
+
+            bool[,] games = new bool[20,20];    // Checks whether a given game has been played / scheduled
+            for (int a = 0; a < 20; a++) {for (int b = 0; b < 20; b++) games[a,b] = false; }    // Initialises array to set all games to unscheduled / unplayed
+
+            for (int c = 0; c < 20; c++) games[c,c] = true; // Set all games where a team plays itself as true (cannot be selected)
+
+            for (int week = 0; week < 2; week++){   // Loop through each game week
+                var rand = new Random();
+                GameWeek gw = new GameWeek(week+1); // Initialise gameweek object with week number
+                Console.WriteLine("Game Week " + gw.WeekNum);
+                bool[] playingThisWeek = new bool[20];  // Array to store whether a team has been scheduled to play this week yet
+                for (int z = 0; z < 20; z++) playingThisWeek[z] = false;    // Initialise all teams to false (not scheduled to play yet)
+
+                for (int team1 = 0; team1 < 20; team1++){   // Loop through each team to generate fixtures
+                    if ((week + team1) % 2 == 0){   // Alternate whether odd or even teams are at home, depending on the week
+                        playingThisWeek[team1] = true;  // The first team is scheduled to play now
+
+                        int team2 = team1;  // Initialise their opponent to be the same as the home team, so checks are easy
+                        while (games[team1,team2] == true || playingThisWeek[team2] == true) team2 = rand.Next(0,20);   // While this game has already been scheduled, or the team selected has already been scheduled this week, re-roll away team
+                        games[team1,team2] = true;  // This combination now has been scheduled, so mark it as such
+                        playingThisWeek[team2] = true;  // Similarly, the away team has now been scheduled to play this week, so mark it as such
+                        string game = String.Format("{0} vs {1}",teams[team1], teams[team2]); // Crude way of storing fixture but works for testing purposes
+                        gw.AddGame(game);   // Add the game to the object list
+                    }
+                }
+                gw.Shuffle();   // Shuffle the playing order, to make it visually more random
+                foreach (string g in gw.Games) Console.WriteLine(g); // Print the week
+                Console.WriteLine();
+            }
         }
 
         static void SimulateSeason(){
@@ -1331,6 +1395,7 @@ namespace Footballv2
             Console.WriteLine("1. Generate Random Teams"); // SetupTeams()
             Console.WriteLine("2. Load Teams"); // LoadTeam()
             Console.WriteLine("3. Simulate Premier League Season"); // SimulateRealSeason()
+            Console.WriteLine("4. Debug (Testing Combinations)");
             //Console.WriteLine("4. Create a Team"); // ???
             //Console.WriteLine("5. Create a Player"); // ???
             //Console.WriteLine("6. ");
