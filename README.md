@@ -107,7 +107,7 @@ and these attributes dictate how a player performs. [...]
   - This has no effect on the outcome of the season, however in the future I plan to enable the ability to slowly step through the season, seeing each game week one by one, and delving into each game if desired
   - Currently, the algorithm theoretically works, however the way I store the matchups needs to be changed - perhaps just store a tuple of teams in each game week?
 
-## Next Steps (in addition to previous updates):
+### Next Steps (in addition to previous updates):
 - Integrate the above into the existing `SimulateRealSeason()` function to verify there is no difference to the results
   - Use the `TestCombinations()` function to return a `List<GameWeek>` - so a list of all 38 game weeks, each containing the matchups for that week
   - Within the `GameWeek` class, change the way games are stored to be a tuple / array of either `RotatableTeam` / `Team`, or simply team ID numbers (0 through 19) which can be used to generalise 
