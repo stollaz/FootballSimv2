@@ -1000,7 +1000,7 @@ namespace Footballv2
 
     class Program{
 
-        public static string VERSION = "a.2.2021.8.13.0";
+        public static string VERSION = "a.2.2021.8.17.0";
         public static List<string> DATA = new List<string> {
             "NON_PEN_GOALS",
             "NON_PEN_XG",
