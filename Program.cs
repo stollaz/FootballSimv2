@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 
+// https://github.com/stollaz/FootballSimv2/blob/master/README.md
 
 namespace Footballv2
 {
