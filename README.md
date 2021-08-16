@@ -78,7 +78,7 @@ and these attributes dictate how a player performs. [...]
  ---
  
  
-## Changelog v. b.2.2021.8.13.0
+## Changelog v. a.2.2021.8.13.0
 - Improved algorithm to generate a "Best XI"
   - Now only players in the correct positions will be selected for those positions
     - This means no more RBs playing at CB, etc.
@@ -101,7 +101,7 @@ and these attributes dictate how a player performs. [...]
 
 ---
 
-## Changelog v. b.2.2021.8.17.0
+## Changelog v. a.2.2021.8.17.0
 - Began to implement a testing function `TestCombinations()` to generate a more random match schedule
   - Previously in season simulation, each match would be simulated in order (e.g. Team0 vs Team1, Team0 vs Team2,... etc.)
   - This has no effect on the outcome of the season, however in the future I plan to enable the ability to slowly step through the season, seeing each game week one by one, and delving into each game if desired
