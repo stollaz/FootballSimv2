@@ -98,3 +98,19 @@ and these attributes dictate how a player performs. [...]
   - Further improve conversion from data to in game statistics, as well as simulation parameters
   - Allow viewing of lineups after season simulation
   - Implement advanced statistics for teams and players
+
+---
+
+## Changelog v. b.2.2021.8.17.0
+- Began to implement a testing function `TestCombinations()` to generate a more random match schedule
+  - Previously in season simulation, each match would be simulated in order (e.g. Team0 vs Team1, Team0 vs Team2,... etc.)
+  - This has no effect on the outcome of the season, however in the future I plan to enable the ability to slowly step through the season, seeing each game week one by one, and delving into each game if desired
+  - Currently, the algorithm theoretically works, however the way I store the matchups needs to be changed - perhaps just store a tuple of teams in each game week?
+
+## Next Steps (in addition to previous updates):
+- Integrate the above into the existing `SimulateRealSeason()` function to verify there is no difference to the results
+  - Use the `TestCombinations()` function to return a `List<GameWeek>` - so a list of all 38 game weeks, each containing the matchups for that week
+  - Within the `GameWeek` class, change the way games are stored to be a tuple / array of either `RotatableTeam` / `Team`, or simply team ID numbers (0 through 19) which can be used to generalise 
+  - Within each game week there also may need to be a list of `TeamGameStats` tuples for each game, so the outcome of each game can be investigated and the stats can be seen
+  - Prior to simulating a game week, the player will need to select any fixtures they wish to step through step by step
+    - Otherwise, all games will be simulated to the end, and the user will not be able to do this after seeing the result, as the game must be simulated again and may be different 
