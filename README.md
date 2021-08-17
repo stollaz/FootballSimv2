@@ -27,7 +27,7 @@ and these attributes dictate how a player performs. [...]
 
 ---
 
-## Current Features (v. b.2.0)
+## Initial Features (v. a.2.0)
 - Ability to generate two completely randomly generated teams
   - Within these teams, various statistical information about the players can be visualised
   - Teams can be saved to a file for use later
@@ -114,3 +114,4 @@ and these attributes dictate how a player performs. [...]
   - Within each game week there also may need to be a list of `TeamGameStats` tuples for each game, so the outcome of each game can be investigated and the stats can be seen
   - Prior to simulating a game week, the player will need to select any fixtures they wish to step through step by step
     - Otherwise, all games will be simulated to the end, and the user will not be able to do this after seeing the result, as the game must be simulated again and may be different 
+- Perhaps try and scrape data from other tiers of English football and simulate seasons with relegation and promotion? Just for fun
