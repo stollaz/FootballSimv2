@@ -115,3 +115,21 @@ and these attributes dictate how a player performs. [...]
   - Prior to simulating a game week, the player will need to select any fixtures they wish to step through step by step
     - Otherwise, all games will be simulated to the end, and the user will not be able to do this after seeing the result, as the game must be simulated again and may be different 
 - Perhaps try and scrape data from other tiers of English football and simulate seasons with relegation and promotion? Just for fun
+
+---
+
+## Changelog v. a.2.2021.8.24.0
+- Added extra cases in `GenerateBestXI()` to reduce the likeihood that teams can generate with missing players
+  - Added a case for player numbers 6 and 8 (Central Midfielders) so that in the case that no players with the position 'CM' are found, the program looks for AM or DM players instead
+  - As of now, all teams have 11 players, and this change brought West Ham from relegation candidates to mid table finishers again
+    - This was because West Ham in particular had no 'CM' players, so was playing every game with 9 men
+- Added a large `// TODO` block in `GenerateRealPlayer()` to outline next steps in reducing the number of goals scored
+
+### Further Next Steps
+- Add a bias to stat generation using data, to ensure that players stats make sense
+  - Currently, precentiles are used to calculate stats with no regard to their context - FBREF calculates percentiles against players in the same position, rather than against all players
+  - As a result, an attacking in the 20th percentile of goals scored actually likely is better at finishing than a defnsive player with the same percentile in the stat, as they are being compared to different (and in the attacker's case, better) player groups
+  - One solution to this is to either add a bias to improve stats related to the players position, or to try and use a function to constrain stats within bounds (e.g. ensure goalkeepers always have a relatively high Goal Prevention stat)
+    - As noted in the `// TODO` block, an example of this is Aaron Ramsdale (GK, Sheffield United) having a 38 Goal Prevention stat, leading to a player with a Finishing stat from almost always scoring against them with a shot
+    - This is unrealistic, as even subpar keepers will not concede every shot to decent players, and arises from the fact that even though Aaron Ramsdale is a relatively poor goalkeeper, his Goal Prevention stat of 38 is not representative as all goalkeepers should by nature be better goal preventers than most other players
+  - The other solution is to alter the goal chance algorithm to reduce dependence on the similarity of values, however as noted before, seasons simulated with completely random values tend to have quite a realistic number of goals scored, leading to the idea that the problem is likely in the stats rather than the algorithms
