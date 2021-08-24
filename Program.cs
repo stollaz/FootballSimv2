@@ -707,20 +707,27 @@ namespace Footballv2
 
             //--
 
-            bestXI[5] = GetBestPlayer(Position.CM, OrderedMFS); // CM
+            Player p6 = GetBestPlayer(Position.CM, OrderedMFS); // CM
+            if (p6.Name == "") p6 = GetBestPlayer(Position.DM, OrderedMFS); // DM if no CMs
+            if (p6.Name == "") p6 = GetBestPlayer(Position.AM, OrderedMFS); // AM if no CMs
+            bestXI[5] = p6;
             bestXI[5].Number = 6;
             OrderedMFS.Remove(bestXI[5]);
 
-            bestXI[7] = GetBestPlayer(Position.CM, OrderedMFS); // CM
+            //bestXI[7] = GetBestPlayer(Position.CM, OrderedMFS); // CM
+            Player p8 = GetBestPlayer(Position.CM, OrderedMFS); // CM
+            if (p8.Name == "") p8 = GetBestPlayer(Position.DM, OrderedMFS); // DM if no CMs
+            if (p8.Name == "") p8 = GetBestPlayer(Position.AM, OrderedMFS); // AM if no CMs
+            bestXI[7] = p8;
             bestXI[7].Number = 8;
-            OrderedMFS.Remove(bestXI[8]);
+            OrderedMFS.Remove(bestXI[7]);
 
             bestXI[9] = GetBestPlayer(Position.AM, OrderedMFS); // AM
             bestXI[9].Number = 10;
             OrderedMFS.Remove(bestXI[10]);
 
             bestXI[8] = GetBestPlayer(Position.ST, OrderedFWS); // ST
-            OrderedFWS[0].Number = 9;   // Striker
+            bestXI[8].Number = 9;
             OrderedFWS.Remove(bestXI[8]);
 
             if (OrderedFWS.Count < 2){  // If not enough forwards
@@ -1001,7 +1008,7 @@ namespace Footballv2
 
     class Program{
 
-        public static string VERSION = "a.2.2021.8.17.0";
+        public static string VERSION = "a.2.2021.8.24.0";
         public static List<string> DATA = new List<string> {
             "NON_PEN_GOALS",
             "NON_PEN_XG",
@@ -1324,9 +1331,12 @@ namespace Footballv2
                 TeamSeasonStats t0 = new TeamSeasonStats(t_);
                 season.Add(t0);
 
-                //Console.WriteLine(t0.Team.Name + ":");
+                Console.WriteLine(t0.Team.Name + ":");
                 //foreach (Player p in t0.Team.Players) Console.WriteLine(p.ToString());
-                //Console.WriteLine();
+                foreach (Player p in t_.Players) {
+                    Console.WriteLine("{0}: Finishing {1}, Tackling {2}, Goal Prevention {3}", p.Name, p.Finishing, p.Tackling, p.GoalPrevention);
+                }
+                Console.WriteLine();
             }
 
             for (int i = 0; i < 20; i++){
@@ -3472,6 +3482,21 @@ namespace Footballv2
                 i++;
             }
 
+            // TODO:
+            // Stats need to be weighted based on the positions they are applying to
+            //  e.g. A low percentile for a defensive stat on a defender would still warrant a relatively high stat value, 
+            //      whereas a low defensive stat on an attacking player would warrant a low stat value
+            //  Especially for goalkeepers: As they rely heavily on the Goal Prevention stat, low percentiles for values that combine to 
+            //      create that stat should not mean they have a low final stat, but rather the final value should be weighted to take into account
+            //      that a low percentile for a goalkeeper still means their goalkeeping skills are potentially decent, just compared to better players
+            //  Alternatively a function could be used to bound these values based on what is expected: for example goalkeepers are useless with 
+            //      low Goal Prevention (e.g. Aaron Ramsdale has 38), despite any premier league goalkeeper actually being perfectly capable of shotstopping
+            //  This is likely the reason for the absurd number of goals per game, as because the goal chance system relies on the similarity of values,
+            //      exceedingly low Goal Prevention stats (e.g. 38) against a high Finishing stat (e.g. 85) means that the attacker will score almost every time,
+            //      which is not realistic
+            //  The alternate approach is to adjust the goalscoring algorithm to rely less on similar values, however as discovered, seasons simulated with
+            //      completely random values tend to have a fairly realistic number of goals scored, so the problem is more likely in the stat conversion rather
+            //      than in the decision algorithms
             if (pos1 == "GK") {
                 GK_AVG = (int)Math.Round((double)(GK_TOT / 13),2);
                 //Console.WriteLine("Average GK percentile: {0}"+(GK_AVG));
