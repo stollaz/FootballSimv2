@@ -985,6 +985,12 @@ namespace Footballv2
             set { player = value; }
         }
 
+        private RotatableTeam team;
+        public RotatableTeam Team{
+            get { return team; }
+            set { team = value; }
+        }
+
         private int gamesPlayed;
         public int GamesPlayed{
             get { return gamesPlayed; }
@@ -1027,8 +1033,9 @@ namespace Footballv2
             set { redCards = value; }
         }
 
-        public PlayerSeasonStats(Player p){
+        public PlayerSeasonStats(Player p, RotatableTeam t){
             player = p;
+            team = t;
             gamesPlayed = 0;
             ratings = new List<float>();
             avgRating = 0;
@@ -1073,7 +1080,7 @@ namespace Footballv2
 
     class Program{
 
-        public static string VERSION = "a.2.2021.9.5.0";    // Format: {alpha}.{alpha-number}.{year}.{month}.{day}.{instance}
+        public static string VERSION = "a.2.2021.9.5.1";    // Format: {alpha}.{alpha-number}.{year}.{month}.{day}.{instance}
         public static List<string> DATA = new List<string> {
             "NON_PEN_GOALS",
             "NON_PEN_XG",
@@ -1388,6 +1395,8 @@ namespace Footballv2
             // Go through each team in the list provided, find out what the best players from each team are,  and create a regular Team object 
             //  from that for the simulator to work with
 
+            List<PlayerSeasonStats> playerStats = new List<PlayerSeasonStats>();
+
             foreach (RotatableTeam t in teams){
                 Team t_ = new Team(t.Name);
                 t_.Players = t.BestXI;
@@ -1396,10 +1405,12 @@ namespace Footballv2
                 TeamSeasonStats t0 = new TeamSeasonStats(t_);
                 season.Add(t0);
 
+                foreach (Player p in t_.Players) playerStats.Add(new PlayerSeasonStats(p, t));
+
                 Console.WriteLine(t0.Team.Name + ":");
                 //foreach (Player p in t0.Team.Players) Console.WriteLine(p.ToString());
                 foreach (Player p in t_.Players) {
-                    Console.WriteLine("{0}: Finishing {1}, Tackling {2}, Goal Prevention {3}", p.Name, p.Finishing, p.Tackling, p.GoalPrevention);
+                    //Console.WriteLine("{0}: Finishing {1}, Tackling {2}, Goal Prevention {3}", p.Name, p.Finishing, p.Tackling, p.GoalPrevention);
                 }
                 Console.WriteLine();
             }
@@ -1407,7 +1418,10 @@ namespace Footballv2
             for (int i = 0; i < 20; i++){
                 for (int j = 0; j < 20; j++){
                     if (i != j){
-                        List<int> goals = SimulateGameInSeason(season[i].Team, season[j].Team);
+                        List<int> goals = SimulateGameInSeason(season[i].Team, season[j].Team, playerStats);
+                        foreach (Player p in season[i].Team.Players) playerStats.Find(pl => pl.Player == p).GamesPlayed++;
+                        foreach (Player p in season[j].Team.Players) playerStats.Find(pl => pl.Player == p).GamesPlayed++;
+
                         //Console.WriteLine(String.Format("{0} {1} - {2} {3}",season[i].Team.Name, goals[0], goals[1], season[j].Team.Name));
                         if (goals[0] > goals[1]) {season[i].Wins++; season[j].Losses++;}
                         else if (goals[0] < goals[1]) {season[j].Wins++; season[i].Losses++;}
@@ -1452,6 +1466,13 @@ namespace Footballv2
                 //Console.Write(t.Team.Rating.ToString().PadRight(5,' ')); // Rating
                 Console.Write("\n");
             }
+
+            List<PlayerSeasonStats> orderedStatsByGoals = playerStats.OrderByDescending(p=>p.GoalsScored).ToList();
+            PlayerSeasonStats topScorer = orderedStatsByGoals[0];
+            List<PlayerSeasonStats> orderedStatsByAssists = playerStats.OrderByDescending(p=>p.Assists).ToList(); // This seems redundant since assists aren't done properly enough to really mean anything (some seasons, the top assister has 3)
+            PlayerSeasonStats topAssister = orderedStatsByAssists[0];
+            Console.WriteLine("\nTOP SCORER: {0} ({1}): {2} goals",topScorer.Player.Name, topScorer.Team.Name, topScorer.GoalsScored);
+            Console.WriteLine("TOP ASSISTER: {0} ({1}): {2} assists",topAssister.Player.Name, topAssister.Team.Name, topAssister.Assists);
 
             /*for (int z = 0; z < 20; z++){
                 if (SortedList[z].Team.Name.Contains("Manchester") || SortedList[z].Team.Name.Contains("Bristol") || SortedList[z].Team.Name.Contains("Basingstoke")){
@@ -2159,7 +2180,8 @@ namespace Footballv2
         // TODO:
         // Make it so that these season game simulations utilise bookings and red cards
         // Maybe have some end of season stats display at the end, e.g. best player (highest average rating), top scorer (most goals), etc.
-        static List<int> SimulateGameInSeason(Team team1, Team team2){
+        // Use ratings as well
+        static List<int> SimulateGameInSeason(Team team1, Team team2, List<PlayerSeasonStats> playerStats = null){
             int team1_score = 0;
             int team2_score = 0;
 
@@ -2230,6 +2252,8 @@ namespace Footballv2
                                         //ShowTeam1Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(p3.Name, team1.Name, i));
+                                        playerStats.Find(pl => pl.Player == p3).GoalsScored++;
+                                        playerStats.Find(pl => pl.Player == p1).Assists++;
                                     }
                                 }
                             }
@@ -2248,6 +2272,7 @@ namespace Footballv2
                                         //ShowTeam2Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(p2.Name, team2.Name, i));
+                                        playerStats.Find(pl => pl.Player == p2).GoalsScored++;
                                     }
                                 }
                             }
@@ -2271,6 +2296,7 @@ namespace Footballv2
                                         //ShowTeam1Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(p1.Name, team1.Name, i));
+                                        playerStats.Find(pl => pl.Player == p1).GoalsScored++;
                                     }
                                 }
                             }
@@ -2289,6 +2315,7 @@ namespace Footballv2
                                         //ShowTeam2Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(p2.Name, team2.Name, i));
+                                        playerStats.Find(pl => pl.Player == p2).GoalsScored++;
                                     }
                                 }
                             }
@@ -2303,6 +2330,7 @@ namespace Footballv2
                             //ShowTeam1Scored(team1, team2, team1_score, team2_score);
 
                             goals.Add(new Goal(p1.Name, team1.Name, i));
+                            playerStats.Find(pl => pl.Player == p1).GoalsScored++;
                         }
                         /*Console.WriteLine("[" + team1.Name + "] " + p1.Name + " attempts a shot.");
                         if (p1.Finishing >= gk2.Defence){
@@ -2344,6 +2372,8 @@ namespace Footballv2
                                         //ShowTeam2Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(q3.Name, team2.Name, i));
+                                        playerStats.Find(pl => pl.Player == q3).GoalsScored++;
+                                        playerStats.Find(pl => pl.Player == q2).Assists++;
                                     }
                                 }
                             }
@@ -2362,6 +2392,7 @@ namespace Footballv2
                                         //ShowTeam1Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(q1.Name, team1.Name, i));
+                                        playerStats.Find(pl => pl.Player == q1).GoalsScored++;
                                     }
                                 }
                             }
@@ -2386,6 +2417,7 @@ namespace Footballv2
                                         //ShowTeam2Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(q2.Name, team2.Name, i));
+                                        playerStats.Find(pl => pl.Player == q2).GoalsScored++;
                                     }
                                 }
                             }
@@ -2404,6 +2436,7 @@ namespace Footballv2
                                         //ShowTeam1Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(q1.Name, team1.Name, i));
+                                        playerStats.Find(pl => pl.Player == q1).GoalsScored++;
                                     }
                                 }
                             }
@@ -2418,6 +2451,7 @@ namespace Footballv2
                             //ShowTeam2Scored(team1, team2, team1_score, team2_score);
 
                             goals.Add(new Goal(q2.Name, team2.Name, i));
+                            playerStats.Find(pl => pl.Player == q2).GoalsScored++;
                         }
                     }
                 }
