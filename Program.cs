@@ -978,6 +978,71 @@ namespace Footballv2
         }
     }
 
+    class PlayerSeasonStats{    // Class for storing stats about a player over the course of a season
+        private Player player;
+        public Player Player{
+            get { return player; }
+            set { player = value; }
+        }
+
+        private int gamesPlayed;
+        public int GamesPlayed{
+            get { return gamesPlayed; }
+            set { gamesPlayed = value; }
+        }
+
+        private List<float> ratings; // Stores every rating from every game they have played
+
+        private int avgRating;
+        public int AvgRating{
+            get { return avgRating; }
+            set { avgRating = value; }
+        }
+
+        public void AddRating(float r){
+            ratings.Add(r);
+        }
+
+        private int goalsScored;
+        public int GoalsScored{
+            get { return goalsScored; }
+            set { goalsScored = value; }
+        }
+
+        private int assists;
+        public int Assists{
+            get { return assists; }
+            set { assists = value; }
+        }
+
+        private int yellowCards;
+        public int YellowCards{
+            get { return yellowCards; }
+            set { yellowCards = value; }
+        }
+
+        private int redCards;
+        public int RedCards{
+            get { return redCards; }
+            set { redCards = value; }
+        }
+
+        public PlayerSeasonStats(Player p){
+            player = p;
+            gamesPlayed = 0;
+            ratings = new List<float>();
+            avgRating = 0;
+            goalsScored = 0;
+            assists = 0;
+            yellowCards = 0;
+            redCards = 0;
+        }
+    }
+
+    class SeasonStats{
+
+    }
+
     class GameWeek{
         private List<string> games; // Store list of games, crudely as a string for now, but should change this eventually, e.g. to a Tuple of RotatableTeam?
         public List<string> Games{
@@ -1008,7 +1073,7 @@ namespace Footballv2
 
     class Program{
 
-        public static string VERSION = "a.2.2021.8.24.0";
+        public static string VERSION = "a.2.2021.9.5.0";    // Format: {alpha}.{alpha-number}.{year}.{month}.{day}.{instance}
         public static List<string> DATA = new List<string> {
             "NON_PEN_GOALS",
             "NON_PEN_XG",
