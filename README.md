@@ -133,3 +133,12 @@ and these attributes dictate how a player performs. [...]
     - As noted in the `// TODO` block, an example of this is Aaron Ramsdale (GK, Sheffield United) having a 38 Goal Prevention stat, leading to a player with a Finishing stat from almost always scoring against them with a shot
     - This is unrealistic, as even subpar keepers will not concede every shot to decent players, and arises from the fact that even though Aaron Ramsdale is a relatively poor goalkeeper, his Goal Prevention stat of 38 is not representative as all goalkeepers should by nature be better goal preventers than most other players
   - The other solution is to alter the goal chance algorithm to reduce dependence on the similarity of values, however as noted before, seasons simulated with completely random values tend to have quite a realistic number of goals scored, leading to the idea that the problem is likely in the stats rather than the algorithms
+
+---
+
+## Changelog v. a.2.2021.10.26.0
+- Added a new mode, where a single game can be played using existing Premier League teams
+  - User selects both teams to play, then is taken to the same menu used for simulating random games
+- Fixed a bug where teams (e.g. Aston Villa) would still not populate all players slots
+  - This is done by, if a player slot cannot be filled, simply picking the best player in that position class that hasn't already been picked
+  - I thought this bug was fixed, and this solution is more of a fallback than a real fix, so should be re-evaluated
