@@ -600,6 +600,11 @@ namespace Footballv2
                     }
                 }
             }
+            if (!pFound){ // If there is still no player found, pick the best player in the list regardless of exact position
+                Player p = OrderedList[0];
+                pFound = true;
+                ret = p;
+            }
 
             return ret;
         }
@@ -1080,7 +1085,7 @@ namespace Footballv2
 
     class Program{
 
-        public static string VERSION = "a.2.2021.9.5.1";    // Format: {alpha}.{alpha-number}.{year}.{month}.{day}.{instance}
+        public static string VERSION = "a.2.2021.10.26.0";    // Format: {alpha}.{alpha-number}.{year}.{month}.{day}.{instance}
         public static List<string> DATA = new List<string> {
             "NON_PEN_GOALS",
             "NON_PEN_XG",
@@ -1188,6 +1193,9 @@ namespace Footballv2
                         csv_to_stats();
                         break;
                     case 4:
+                        SimulateRealGame();
+                        break;
+                    case 5:
                         TestCombinations();
                         break;
                     case 9:
@@ -1376,6 +1384,103 @@ namespace Footballv2
             }
         }
 
+        static void SimulateRealGame(){
+            Console.WriteLine();
+            List<RotatableTeam> teams = GenerateLeague();
+
+            RotatableTeam Rteam1;
+            RotatableTeam Rteam2;
+            int i = 1;
+            foreach (var a in teams){
+                Console.WriteLine("{0} {1}",i,a.Name); i++;
+            }
+            Console.Write("\nEnter Team 1: > ");
+            bool valid = false;
+            int t1=-1;
+            while (!valid){
+                try{t1 = int.Parse(Console.ReadLine());}
+                catch{}
+                if (t1 >=1 && t1 <= 20) valid = true;
+                else{Console.Write("Invalid Entry. Enter Team 1: > ");}
+            }
+            
+            Rteam1 = teams[t1-1];
+            Console.WriteLine("{0} selected.", Rteam1.Name);
+
+            Console.WriteLine();
+            i = 1;
+            foreach (var a in teams){
+                Console.WriteLine("{0} {1}",i,a.Name); i++;
+            }
+            Console.Write("\nEnter Team 2: > ");
+            valid = false;
+            int t2=-1;
+            while (!valid){
+                try{t2 = int.Parse(Console.ReadLine());}
+                catch{}
+                if (t2 >=1 && t2 <= 20) valid = true;
+                else{Console.Write("Invalid Entry. Enter Team 2: > ");}
+            }
+            Rteam2 = teams[t2-1];
+            Console.WriteLine("{0} selected.", Rteam2.Name);
+
+            Team team_1 = new Team(Rteam1.Name);
+            team_1.Players = Rteam1.BestXI;
+            team_1.CalculateRating();
+            Team team_2 = new Team(Rteam2.Name);
+            team_2.Players = Rteam2.BestXI;
+            team_2.CalculateRating();
+
+            List<Player> team1 = team_1.Players.ToList();
+            List<Player> team2 = team_2.Players.ToList();
+            
+            Console.WriteLine("Team 1: " + team_1.Name);
+            Console.Write("TEAM OVERALL: ");
+            PrintWithColour(team_1.Rating);
+            
+            Console.WriteLine("\nTeam 2: " + team_2.Name);
+            Console.Write("TEAM OVERALL: ");
+            PrintWithColour(team_2.Rating);
+
+            Console.WriteLine("\n");
+
+            int option = Menu();
+
+            while (option != 9){
+                if (option == 8){
+                    //SaveTeam(team1, "team1");
+                    //SaveTeam(team2, "team2");
+                    team_1.SaveTeam();
+                    team_2.SaveTeam();
+                }
+                if (option == 9) break;
+                else if (option == 10) SimulateGame(team_1, team_2, true);
+                else if (option == 11) SimulateGame(team_1, team_2, false);
+                else if (option == 12){
+                    Console.WriteLine("Rerolling teams is not available in this mode.");
+                    Console.WriteLine("To select different teams, go BACK (9).");
+                }
+                else{
+                    Console.WriteLine("\nTeam 1: " + team_1.Name + "\n");
+                    PrintTeam(team1, option);
+                    Console.Write("\nTEAM OVERALL: ");
+                    PrintWithColour(CalculateTeamOverall(team1));
+
+                    Console.WriteLine("\nTeam 2: " + team_2.Name + "\n");
+                    PrintTeam(team2, option);
+                    Console.Write("\nTEAM OVERALL: ");
+                    PrintWithColour(CalculateTeamOverall(team2));
+                }
+                if (option != 9) {
+                    Console.WriteLine("\nPRESS ENTER TO CONTINUE");
+                    Console.ReadLine();
+                    option = Menu();
+                }
+            }
+
+            //SimulateGame(T1, T2, true);
+        }
+
         static void SimulateRealSeason(List<RotatableTeam> teams){
             List<TeamSeasonStats> season = new List<TeamSeasonStats>();
 
@@ -1492,7 +1597,8 @@ namespace Footballv2
             Console.WriteLine("1. Generate Random Teams"); // SetupTeams()
             Console.WriteLine("2. Load Teams"); // LoadTeam()
             Console.WriteLine("3. Simulate Premier League Season"); // SimulateRealSeason()
-            Console.WriteLine("4. Debug (Testing Combinations)");
+            Console.WriteLine("4. Simulate Single Premier League Game");
+            Console.WriteLine("5. Debug (Testing Combinations)");
             //Console.WriteLine("4. Create a Team"); // ???
             //Console.WriteLine("5. Create a Player"); // ???
             //Console.WriteLine("6. ");
@@ -1525,7 +1631,7 @@ namespace Footballv2
             Console.WriteLine("12. Reroll Teams");
             Console.Write("---\n> ");
 
-            option = int.Parse(Console.ReadLine());
+            try{option = int.Parse(Console.ReadLine());}catch{option=-1;}
 
             return option;
         }
@@ -1541,7 +1647,7 @@ namespace Footballv2
             Console.WriteLine("9. Exit Game (Back to Teams)");
             Console.Write("---\n> ");
 
-            option = int.Parse(Console.ReadLine());
+            try{option = int.Parse(Console.ReadLine());}catch{option=-1;}
 
             return option;
         }
@@ -1670,6 +1776,10 @@ namespace Footballv2
             Random r = new Random();
 
             bool isTeam1 = true;
+            if (show){
+                Console.WriteLine("Press ENTER to begin game, and to advance through the game");
+                Console.ReadLine();
+            }
 
             for (int i = 3; i <= 90; i+=3){ // Simulate in 5 minute increments
                 Console.WriteLine("");
@@ -2252,8 +2362,8 @@ namespace Footballv2
                                         //ShowTeam1Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(p3.Name, team1.Name, i));
-                                        playerStats.Find(pl => pl.Player == p3).GoalsScored++;
-                                        playerStats.Find(pl => pl.Player == p1).Assists++;
+                                        try{playerStats.Find(pl => pl.Player == p3).GoalsScored++;
+                                        playerStats.Find(pl => pl.Player == p1).Assists++;}catch{}
                                     }
                                 }
                             }
@@ -2272,7 +2382,7 @@ namespace Footballv2
                                         //ShowTeam2Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(p2.Name, team2.Name, i));
-                                        playerStats.Find(pl => pl.Player == p2).GoalsScored++;
+                                        try{playerStats.Find(pl => pl.Player == p2).GoalsScored++;}catch{}
                                     }
                                 }
                             }
@@ -2296,7 +2406,7 @@ namespace Footballv2
                                         //ShowTeam1Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(p1.Name, team1.Name, i));
-                                        playerStats.Find(pl => pl.Player == p1).GoalsScored++;
+                                        try{playerStats.Find(pl => pl.Player == p1).GoalsScored++;}catch{}
                                     }
                                 }
                             }
@@ -2315,7 +2425,7 @@ namespace Footballv2
                                         //ShowTeam2Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(p2.Name, team2.Name, i));
-                                        playerStats.Find(pl => pl.Player == p2).GoalsScored++;
+                                        try {playerStats.Find(pl => pl.Player == p2).GoalsScored++;}catch{}
                                     }
                                 }
                             }
@@ -2330,7 +2440,7 @@ namespace Footballv2
                             //ShowTeam1Scored(team1, team2, team1_score, team2_score);
 
                             goals.Add(new Goal(p1.Name, team1.Name, i));
-                            playerStats.Find(pl => pl.Player == p1).GoalsScored++;
+                            try{playerStats.Find(pl => pl.Player == p1).GoalsScored++;}catch{}
                         }
                         /*Console.WriteLine("[" + team1.Name + "] " + p1.Name + " attempts a shot.");
                         if (p1.Finishing >= gk2.Defence){
@@ -2372,8 +2482,8 @@ namespace Footballv2
                                         //ShowTeam2Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(q3.Name, team2.Name, i));
-                                        playerStats.Find(pl => pl.Player == q3).GoalsScored++;
-                                        playerStats.Find(pl => pl.Player == q2).Assists++;
+                                        try{playerStats.Find(pl => pl.Player == q3).GoalsScored++;
+                                        playerStats.Find(pl => pl.Player == q2).Assists++;}catch{}
                                     }
                                 }
                             }
@@ -2392,7 +2502,7 @@ namespace Footballv2
                                         //ShowTeam1Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(q1.Name, team1.Name, i));
-                                        playerStats.Find(pl => pl.Player == q1).GoalsScored++;
+                                        try{playerStats.Find(pl => pl.Player == q1).GoalsScored++;}catch{}
                                     }
                                 }
                             }
@@ -2417,7 +2527,7 @@ namespace Footballv2
                                         //ShowTeam2Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(q2.Name, team2.Name, i));
-                                        playerStats.Find(pl => pl.Player == q2).GoalsScored++;
+                                        try{playerStats.Find(pl => pl.Player == q2).GoalsScored++;}catch{}
                                     }
                                 }
                             }
@@ -2436,7 +2546,7 @@ namespace Footballv2
                                         //ShowTeam1Scored(team1, team2, team1_score, team2_score);
 
                                         goals.Add(new Goal(q1.Name, team1.Name, i));
-                                        playerStats.Find(pl => pl.Player == q1).GoalsScored++;
+                                        try{playerStats.Find(pl => pl.Player == q1).GoalsScored++;}catch{}
                                     }
                                 }
                             }
@@ -2451,7 +2561,7 @@ namespace Footballv2
                             //ShowTeam2Scored(team1, team2, team1_score, team2_score);
 
                             goals.Add(new Goal(q2.Name, team2.Name, i));
-                            playerStats.Find(pl => pl.Player == q2).GoalsScored++;
+                            try{playerStats.Find(pl => pl.Player == q2).GoalsScored++;}catch{}
                         }
                     }
                 }
