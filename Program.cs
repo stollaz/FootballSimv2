@@ -3199,7 +3199,7 @@ namespace Footballv2
             else if (rating < 7) Console.ForegroundColor = ConsoleColor.Yellow;
             else if (rating < 8) Console.ForegroundColor = ConsoleColor.Green;
             else if (rating < 9) Console.ForegroundColor = ConsoleColor.DarkGreen;
-            else Console.ForegroundColor = ConsoleColor.Magenta;
+            else Console.ForegroundColor = ConsoleColor.Cyan;
 
             Console.Write(rating.ToString("0.0") + "\n");
 
