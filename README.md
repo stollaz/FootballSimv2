@@ -142,3 +142,22 @@ and these attributes dictate how a player performs. [...]
 - Fixed a bug where teams (e.g. Aston Villa) would still not populate all players slots
   - This is done by, if a player slot cannot be filled, simply picking the best player in that position class that hasn't already been picked
   - I thought this bug was fixed, and this solution is more of a fallback than a real fix, so should be re-evaluated
+
+---
+
+## Changelog v. a.2.2021.12.18.2
+- Updated csv database
+  - All top 5 leagues are now included (Premier League, La Liga, Bundesliga, Serie A, Ligue 1)
+  - When simulating an entire season or a game from a season, the player can pick which league to use
+- Fixed a bug where players would not be put in the right position due to their position not being read in correctly
+- Fixed a bug where the program would crash if there were not enough of a certain position in the team
+  - This is solved by actually utilising the "position2" attribute of players, and using it if the list of a position is too small
+
+### Further Next Steps
+- Champions League simulation, using best teams of the top 5 leagues and simulating the tournament with correct rules
+- Actually implement squad rotation
+- Utilise a "position3"
+- Improve positioning of players (e.g. for Man Utd, a CM is in the AM spot and an AM in the CM spot)
+- Prioritise certain positions first
+  - E.g. for PSG, Mbappe is picked as a winger since it is chosen first, leaving striker to be filled by a youth member
+  - To do this, perhaps instead of filling by position, find the best players and put them in their best positions first
