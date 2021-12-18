@@ -1356,7 +1356,15 @@ namespace Footballv2
         //      - Change how player Overall is calculated to be weighted towards their particular stats
         //      - Change formations to be 4-3-3 instead of 4-2-3-1 so they can be more generic with DF-MF-FW (MAYBE)
         public static List<RotatableTeam> GenerateLeague() {
-            string root = "csvs/ENG1";
+            string[] regions = {"ENG","ESP","FRA","ITA","GER"};
+            Console.Write("Enter region code for league (ENG, ESP, FRA, ITA, GER) > ");
+            string r = Console.ReadLine().ToUpper();
+            if (!regions.Contains(r)){
+                Console.WriteLine("Invalid input. Defaulting to ENG.");
+                r = "ENG";
+            }
+
+            string root = "csvs/"+r+"1";
             string[] teams = Directory.GetDirectories(root);
             //var directory_in_str = "csvs/Manchester Utd/";
             List<RotatableTeam> TEAMS = new List<RotatableTeam>();
@@ -1530,8 +1538,8 @@ namespace Footballv2
                 Console.WriteLine();
             }
 
-            for (int i = 0; i < 20; i++){
-                for (int j = 0; j < 20; j++){
+            for (int i = 0; i < teams.Count; i++){
+                for (int j = 0; j < teams.Count; j++){
                     if (i != j){
                         List<int> goals = SimulateGameInSeason(season[i].Team, season[j].Team, playerStats);
                         foreach (Player p in season[i].Team.Players) playerStats.Find(pl => pl.Player == p).GamesPlayed++;
@@ -1552,7 +1560,7 @@ namespace Footballv2
                 //Console.WriteLine();
             }
 
-            for (int k = 0; k < 20; k++){
+            for (int k = 0; k < teams.Count; k++){
                 season[k].calculateGoalDiff();
                 season[k].calculatePoints();
             }
@@ -1561,12 +1569,12 @@ namespace Footballv2
 
             Console.WriteLine("SEASON TABLE");
             Console.WriteLine("POS TEAM                                  PTS  W   D   L   GF   GA   GD   ");
-            for(int l = 0; l < 20; l++){
+            for(int l = 0; l < teams.Count; l++){
                 TeamSeasonStats t = SortedList[l];
                 if (l+1 == 1) Console.ForegroundColor = ConsoleColor.Yellow;
                 else if (l+1 == 2 || l+1 == 3 || l+1 == 4) Console.ForegroundColor = ConsoleColor.Green;
                 else if (l+1 == 5) Console.ForegroundColor = ConsoleColor.Magenta;
-                else if (l+1 == 18 || l+1 == 19 || l+1 == 20) Console.ForegroundColor = ConsoleColor.Red;
+                else if (l+1 > (teams.Count-3)) Console.ForegroundColor = ConsoleColor.Red;
                 Console.Write((l+1).ToString().PadRight(4,' ')); // Position
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write(t.Team.Name.PadRight(38,' ')); // Name
