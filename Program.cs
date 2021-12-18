@@ -1824,7 +1824,7 @@ namespace Footballv2
                     if (choice == 0){   // PASS
                     // pass then chance to shoot
                         Player p3 = team1.Players[r.Next(0,11)]; // Pick random player to pass to
-                        while (p3 == q1 || p3.InGameStats.SentOff) p3 = team2.Players[r.Next(0,11)];
+                        while (p3 == p1 || p3.InGameStats.SentOff) p3 = team1.Players[r.Next(0,11)];
                         PlayerInGame p3_ = playersInGames1.Find(p => p.Player.Equals(p3));
                         Console.WriteLine("> [" + team1.Name + "] " + p1.Name + " attempts to pass to " + p3.Name + ".");
 
