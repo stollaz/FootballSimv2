@@ -148,7 +148,7 @@ and these attributes dictate how a player performs. [...]
 ## Changelog v. a.2.2021.12.18.2
 - Updated CSV database for 2021/22 rosters
   - All top 5 leagues are now included (Premier League, La Liga, Bundesliga, Serie A, Ligue 1)
-   - Where possible, teams down to League 2 in England are populated, but in almost all cases there is not enough data to generate a CSV
+    - Where possible, teams down to League 2 in England are populated, but in almost all cases there is not enough data to generate a CSV
   - When simulating an entire season or a game from a season, the player can pick which league to use
 - Fixed a bug where players would not be put in the right position due to their position not being read in correctly
 - Fixed a bug where the program would crash if there were not enough of a certain position in the team
