@@ -1614,8 +1614,8 @@ namespace Footballv2
             Console.WriteLine("0. Simulate Random Season"); // SimulateSeason()
             Console.WriteLine("1. Generate Random Teams"); // SetupTeams()
             Console.WriteLine("2. Load Teams"); // LoadTeam()
-            Console.WriteLine("3. Simulate Premier League Season"); // SimulateRealSeason()
-            Console.WriteLine("4. Simulate Single Premier League Game");
+            Console.WriteLine("3. Simulate League Season"); // SimulateRealSeason()
+            Console.WriteLine("4. Simulate Single League Game");
             Console.WriteLine("5. Debug (Testing Combinations)");
             //Console.WriteLine("4. Create a Team"); // ???
             //Console.WriteLine("5. Create a Player"); // ???
