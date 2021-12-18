@@ -626,6 +626,14 @@ namespace Footballv2
                 else if (p.PositionType(p.Position) == Position.MF) _MFS.Add(p);
                 else if (p.PositionType(p.Position) == Position.FW) _FWS.Add(p);
             }
+            if (_MFS.Count < 3){
+                Console.WriteLine("---");
+                foreach (var p in players){
+                    //Console.WriteLine("{0}: {1},{2}",p.Name,p.PrintPosition(p.Position), p.PrintPosition(p.Position2));
+                    if (p.PositionType(p.Position2) == Position.MF) _MFS.Add(p);
+                }
+            }
+            //Console.WriteLine("{0},{1},{2},{3}", _GKS.Count, _DFS.Count, _MFS.Count, _FWS.Count);
 
             //List<TeamSeasonStats> SortedList = season.OrderByDescending(s=>s.Points).ThenByDescending(s=>s.GoalDiff).ThenByDescending(s=>s.GoalsFor).ToList();
             List<Player> OrderedGKS = _GKS.OrderByDescending(p=>p.PositionalOverall).ThenByDescending(p=>p.GoalPrevention).ToList();
@@ -1085,7 +1093,7 @@ namespace Footballv2
 
     class Program{
 
-        public static string VERSION = "a.2.2021.12.18.1";    // Format: {alpha}.{alpha-number}.{year}.{month}.{day}.{instance}
+        public static string VERSION = "a.2.2021.12.18.2";    // Format: {alpha}.{alpha-number}.{year}.{month}.{day}.{instance}
         public static List<string> DATA = new List<string> {
             "NON_PEN_GOALS",
             "NON_PEN_XG",
@@ -1348,15 +1356,17 @@ namespace Footballv2
         //      - Change how player Overall is calculated to be weighted towards their particular stats
         //      - Change formations to be 4-3-3 instead of 4-2-3-1 so they can be more generic with DF-MF-FW (MAYBE)
         public static List<RotatableTeam> GenerateLeague() {
-            string root = "csvs";
+            string root = "csvs/ENG1";
             string[] teams = Directory.GetDirectories(root);
             //var directory_in_str = "csvs/Manchester Utd/";
             List<RotatableTeam> TEAMS = new List<RotatableTeam>();
             foreach (string team in teams){
+                //Console.WriteLine(team);
                 RotatableTeam t = new RotatableTeam(Path.GetFileName(team));
                 string[] players = Directory.GetFiles(team);
                 foreach (var p in players){
                     Player a = GenerateRealPlayer(p);
+                    //Console.WriteLine("----{0}: {1},{2}",a.Name, a.Position, a.Position2);
                     t.AddPlayer(a);
                 }
                 TEAMS.Add(t);
@@ -1373,7 +1383,7 @@ namespace Footballv2
         }
 
         public static void PrintAllInLeague() {
-            string root = "csvs";
+            string root = "csvs/ENG1";
             string[] teams = Directory.GetDirectories(root);
             //var directory_in_str = "csvs/Manchester Utd/";
             foreach (string team in teams){
@@ -3541,7 +3551,7 @@ namespace Footballv2
         }
 
         public static void PrintIntroduction(object filename) {
-            var f = File.ReadAllLines(string.Format("csvs/Manchester Utd/{0}",filename));
+            var f = File.ReadAllLines(string.Format("csvs/ENG1/Manchester Utd/{0}",filename));
             //var f = open("csvs/Manchester Utd/{0}".format(filename), "r");
             //var info = f.readline().rstrip("\n").split(",");
             var info = f[0].Split(',');
@@ -3600,6 +3610,8 @@ namespace Footballv2
                 case "LB": return Position.LB;
                 case "RB": return Position.RB;
                 case "CB": return Position.CB;
+                case "LCB": return Position.CB;
+                case "RCB": return Position.CB;
                 case "LM": return Position.LM;
                 case "RM": return Position.RM;
                 case "CM": return Position.CM;
@@ -3733,7 +3745,9 @@ namespace Footballv2
             }
             //Console.WriteLine(String.Format("\nDribbling: {0}\nPassing: {1}\nAssisting: {2}\nFinishing: {3}\nTackling: {4}\nGoal Prevention: {5}",DRIBBLING, PASSING, ASSISTING, FINISHING, TACKLING, GOAL_PREVENTION));
 
-            return new Player(fullname, 0, ConvertToPosition(pos1), DRIBBLING, FINISHING, TACKLING, PASSING, ASSISTING, GOAL_PREVENTION);
+            Player p = new Player(fullname, 0, ConvertToPosition(pos1), DRIBBLING, FINISHING, TACKLING, PASSING, ASSISTING, GOAL_PREVENTION);
+            p.Position2 = ConvertToPosition(pos2);
+            return p;
         }
 
         public static void PrintStats(string filepath) {
@@ -3894,7 +3908,7 @@ namespace Footballv2
         }
         
         public static void PrintAll() {
-            var directory_in_str = "csvs/Manchester Utd/";
+            var directory_in_str = "csvs/ENG1/Manchester Utd/";
             string[] files = Directory.GetFiles(directory_in_str);
             //var directory = os.fsencode(directory_in_str);
             /*foreach (var file in os.listdir(directory)) {
@@ -3918,7 +3932,7 @@ namespace Footballv2
             //f = csv.writer(open("csvs/Manchester Utd/Fred.csv","r"))
             Console.WriteLine("Enter a Manchester Utd player to print stats for: ");
             string p = Console.ReadLine();
-            p = "csvs/Manchester Utd/" + p + ".csv";
+            p = "csvs/ENG1/Manchester Utd/" + p + ".csv";
             //p = "{0}.csv".format(p);
             PrintStats(p);
             //PrintStats("Fred.csv")
