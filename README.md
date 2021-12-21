@@ -173,6 +173,6 @@ and these attributes dictate how a player performs. [...]
 - Allow ability to see game stats from any game during a week
 - Allow ability to print current league table at any stage
 - Allow ability to skip to the end / a specific week at any stage
-- [Hard] Allow ability to replay any game stage by stage and see actions
+- **[Hard]** Allow ability to replay any game stage by stage and see actions
   - This would require storing a log of every event printed to the console during a game
   - Would also require storing when the user needs to press enter to continue the game
