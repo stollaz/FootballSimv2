@@ -14,3 +14,5 @@ S:\Summer Projects\Footballv2\obj\Debug\net5.0\Footballv2.dll
 S:\Summer Projects\Footballv2\obj\Debug\net5.0\ref\Footballv2.dll
 S:\Summer Projects\Footballv2\obj\Debug\net5.0\Footballv2.pdb
 S:\Summer Projects\Footballv2\obj\Debug\net5.0\Footballv2.genruntimeconfig.cache
+S:\Summer Projects\Footballv2\bin\Debug\net5.0\RoundRobin.dll
+S:\Summer Projects\Footballv2\obj\Debug\net5.0\Footballv2.csproj.CopyComplete

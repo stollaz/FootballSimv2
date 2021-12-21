@@ -1,11 +1,36 @@
 {
   "version": 3,
   "targets": {
-    "net5.0": {}
+    "net5.0": {
+      "RoundRobin/2.1.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/RoundRobin.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/RoundRobin.dll": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "RoundRobin/2.1.0": {
+      "sha512": "KzhSjNs0uIEsP8AMlvSJOn9JYHvayiZRnHuFH0zI1zuM/kYisKGPZJuiyAEsTTh+02Lshgdpvyt05fpDsAJy7A==",
+      "type": "package",
+      "path": "roundrobin/2.1.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard2.0/RoundRobin.dll",
+        "roundrobin.2.1.0.nupkg.sha512",
+        "roundrobin.nuspec"
+      ]
+    }
+  },
   "projectFileDependencyGroups": {
-    "net5.0": []
+    "net5.0": [
+      "RoundRobin >= 2.1.0"
+    ]
   },
   "packageFolders": {
     "C:\\Users\\m_sto\\.nuget\\packages\\": {}
@@ -43,6 +68,12 @@
     "frameworks": {
       "net5.0": {
         "targetAlias": "net5.0",
+        "dependencies": {
+          "RoundRobin": {
+            "target": "Package",
+            "version": "[2.1.0, )"
+          }
+        },
         "imports": [
           "net461",
           "net462",
