@@ -162,3 +162,17 @@ and these attributes dictate how a player performs. [...]
 - Prioritise certain positions first
   - E.g. for PSG, Mbappe is picked as a winger since it is chosen first, leaving striker to be filled by a youth member
   - To do this, perhaps instead of filling by position, find the best players and put them in their best positions first
+
+---
+
+## Changelog v. a.2.2021.12.21.0
+- Added mode to step through season week by week to see results
+- Updated algorithm for generating fixtures, so that they appear random 
+
+### Further Next Steps
+- Allow ability to see game stats from any game during a week
+- Allow ability to print current league table at any stage
+- Allow ability to skip to the end / a specific week at any stage
+- [Hard] Allow ability to replay any game stage by stage and see actions
+  - This would require storing a log of every event printed to the console during a game
+  - Would also require storing when the user needs to press enter to continue the game
