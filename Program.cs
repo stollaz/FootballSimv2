@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using RoundRobin;
 
 // https://github.com/stollaz/FootballSimv2/blob/master/README.md
 
@@ -1064,8 +1065,14 @@ namespace Footballv2
     }
 
     class GameWeek{
-        private List<string> games; // Store list of games, crudely as a string for now, but should change this eventually, e.g. to a Tuple of RotatableTeam?
-        public List<string> Games{
+        private List<string> _games; // Store list of games, crudely as a string for now, but should change this eventually, e.g. to a Tuple of RotatableTeam?
+        public List<string> _Games{
+            get { return _games; }
+            set { _games = value; }
+        }
+
+        private List<(RotatableTeam, RotatableTeam)> games; // Store list of games, crudely as a string for now, but should change this eventually, e.g. to a Tuple of RotatableTeam?
+        public List<(RotatableTeam, RotatableTeam)> Games{
             get { return games; }
             set { games = value; }
         }
@@ -1077,6 +1084,10 @@ namespace Footballv2
         }
 
         public void AddGame(string s){
+            _games.Add(s);
+        }
+
+        public void AddGame((RotatableTeam, RotatableTeam) s){
             games.Add(s);
         }
 
@@ -1087,13 +1098,15 @@ namespace Footballv2
 
         public GameWeek(int n){
             weekNum = n;
-            games = new List<string>();
+            _games = new List<string>();
+            games = new List<(RotatableTeam,RotatableTeam)>();
         }
     }
 
     class Program{
 
-        public static string VERSION = "a.2.2021.12.18.2";    // Format: {alpha}.{alpha-number}.{year}.{month}.{day}.{instance}
+        public static string VERSION = "a.2.2021.12.21.0";    // Format: {alpha}.{alpha-number}.{year}.{month}.{day}.{instance}
+
         public static List<string> DATA = new List<string> {
             "NON_PEN_GOALS",
             "NON_PEN_XG",
@@ -1201,9 +1214,12 @@ namespace Footballv2
                         csv_to_stats();
                         break;
                     case 4:
-                        SimulateRealGame();
+                        csv_to_stats(true);
                         break;
                     case 5:
+                        SimulateRealGame();
+                        break;
+                    case 6:
                         TestCombinations();
                         break;
                     case 9:
@@ -1221,15 +1237,238 @@ namespace Footballv2
             //Console.WriteLine(GenerateNormal(50,25)); // roughly a number centred around 50 that is likely to be between 0 and 100
         }
 
+        static void PrintArray(bool[,] games){
+            for (int a = 0; a < 20; a++){
+                for (int b = 0; b < 20; b++){
+                    if (games[a,b]) {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.Write("T ");
+                    }
+                    else {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("F ");
+                    }
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                }
+                Console.WriteLine();
+            }
+        }
+
+        static List<GameWeek> ListMatches(List<string> ListTeam)
+        {
+            if (ListTeam.Count % 2 != 0)
+            {
+                ListTeam.Add("Bye");
+            }
+
+            int numDays = (20 - 1);
+            int halfSize = 20 / 2;
+
+            List<string> teams = new List<string>();
+
+            teams.AddRange(ListTeam.Skip(halfSize).Take(halfSize));
+            teams.AddRange(ListTeam.Skip(1).Take(halfSize -1).ToArray().Reverse());
+
+            int teamsSize = teams.Count;
+
+            List<GameWeek> Fixtures = new List<GameWeek>();
+
+            for (int day = 0; day < numDays; day++)
+            {
+                GameWeek gw = new GameWeek(day+1);
+
+                Console.WriteLine("Day {0}", (day + 1));
+
+                int teamIdx = day % teamsSize;
+
+                Console.WriteLine("{0} vs {1}", teams[teamIdx], ListTeam[0]);
+                gw.AddGame(String.Format("{0} vs {1}", teams[teamIdx], ListTeam[0]));
+
+                for (int idx = 1; idx < halfSize; idx++)
+                {               
+                    int firstTeam = (day + idx) % teamsSize;
+                    int secondTeam = (day  + teamsSize - idx) % teamsSize;
+                    Console.WriteLine("{0} vs {1}", teams[firstTeam], teams[secondTeam]);
+                    gw.AddGame(String.Format("{0} vs {1}", teams[firstTeam], teams[secondTeam]));
+                }
+                Fixtures.Add(gw);
+            }
+
+            return Fixtures;
+        }
+
+        static List<GameWeek> ListMatches(List<RotatableTeam> ListTeam)
+        {
+            int numDays = (20 - 1);
+            int halfSize = 20 / 2;
+
+            List<RotatableTeam> teams = new List<RotatableTeam>();
+
+            teams.AddRange(ListTeam.Skip(halfSize).Take(halfSize));
+            teams.AddRange(ListTeam.Skip(1).Take(halfSize -1).ToArray().Reverse());
+
+            int teamsSize = teams.Count;
+
+            List<GameWeek> Fixtures = new List<GameWeek>();
+
+            for (int day = 0; day < numDays; day++)
+            {
+                GameWeek gw = new GameWeek(day+1);
+
+                //Console.WriteLine("Day {0}", (day + 1));
+
+                int teamIdx = day % teamsSize;
+
+                //Console.WriteLine("{0} vs {1}", teams[teamIdx], ListTeam[0]);
+                //gw.AddGame(String.Format("{0} vs {1}", teams[teamIdx], ListTeam[0]));
+                gw.AddGame((teams[teamIdx], ListTeam[0]));
+
+                for (int idx = 1; idx < halfSize; idx++)
+                {               
+                    int firstTeam = (day + idx) % teamsSize;
+                    int secondTeam = (day  + teamsSize - idx) % teamsSize;
+                    //Console.WriteLine("{0} vs {1}", teams[firstTeam], teams[secondTeam]);
+                    //gw.AddGame(String.Format("{0} vs {1}", teams[firstTeam], teams[secondTeam]));
+                    gw.AddGame((teams[firstTeam], teams[secondTeam]));
+                }
+                Fixtures.Add(gw);
+            }
+
+            return Fixtures;
+        }
+
         static void TestCombinations(){
-            List<int> teams = new List<int>() {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}; // List of teams
+            List<string> teams = new List<string>() {"0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19"}; // List of teams
+            List<GameWeek> Fixtures = ListMatches(teams);
+            
+            foreach (var f in Fixtures){
+                Console.WriteLine("Game Week {0}",f.WeekNum);
+                foreach (var g in f.Games) Console.WriteLine(g);
+            }
+
+            /*List<int> teams = new List<int>() {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}; // List of teams
 
             bool[,] games = new bool[20,20];    // Checks whether a given game has been played / scheduled
             for (int a = 0; a < 20; a++) {for (int b = 0; b < 20; b++) games[a,b] = false; }    // Initialises array to set all games to unscheduled / unplayed
 
             for (int c = 0; c < 20; c++) games[c,c] = true; // Set all games where a team plays itself as true (cannot be selected)
 
-            for (int week = 0; week < 2; week++){   // Loop through each game week
+            List<(int,int)> fixtures = new List<(int,int)>();
+            for (int a = 0; a < 20; a++){
+                for (int b = 0; b < 20; b++){
+                    if (a!=b) fixtures.Add((a,b));
+                }
+            }
+
+            
+
+            Console.WriteLine(fixtures.Count);
+
+            var pos = fixtures.Where(p => p.Item1 == 0 || p.Item2 == 0);
+
+            Console.WriteLine(pos.Count());
+
+            for (int week = 0; week < 19; week++){
+                Console.WriteLine("Week {0}",week);
+                bool done = false;
+                while(!done){
+                    bool[] playingThisWeek = new bool[20];  // Array to store whether a team has been scheduled to play this week yet
+                    for (int z = 0; z < 20; z++) playingThisWeek[z] = false;    // Initialise all teams to false (not scheduled to play yet)
+
+                    for (int team1 = 0; team1 < 20; team1++){
+                        var fixs = fixtures.Where(p => ((p.Item1 == team1 && !playingThisWeek[p.Item2]) || (p.Item2 == team1 && !playingThisWeek[p.Item1])));
+                        if (fixs.Count() == 0) break;
+                        else{
+                            var fix = fixs.ElementAt(0);
+                            var t1 = fix.Item1;
+                            var t2 = fix.Item2;
+                            playingThisWeek[t1] = true;
+                            playingThisWeek[t2] = true;
+
+                            Console.WriteLine("{0} vs {1}",t1,t2);
+                        }
+                    }
+
+                    if (playingThisWeek.All(p => p==true)) done = true;
+                }
+            }*/
+                
+            /*var rand = new Random();
+            GameWeek gw = new GameWeek(week+1); // Initialise gameweek object with week number
+            Console.WriteLine("Game Week " + gw.WeekNum);
+            bool[] playingThisWeek = new bool[20];  // Array to store whether a team has been scheduled to play this week yet
+            for (int z = 0; z < 20; z++) playingThisWeek[z] = false;    // Initialise all teams to false (not scheduled to play yet)
+
+            for (int team1 = 0; team1 < 20; team1++){   // Loop through each team to generate fixtures
+                if ((week + team1) % 2 == 0){   // Alternate whether odd or even teams are at home, depending on the week
+                    playingThisWeek[team1] = true;  // The first team is scheduled to play now
+
+                    int team2 = team1;  // Initialise their opponent to be the same as the home team, so checks are easy
+                    while (games[team1,team2] == true || playingThisWeek[team2] == true) team2 = rand.Next(0,20);   // While this game has already been scheduled, or the team selected has already been scheduled this week, re-roll away team
+                    games[team1,team2] = true;  // This combination now has been scheduled, so mark it as such
+                    playingThisWeek[team2] = true;  // Similarly, the away team has now been scheduled to play this week, so mark it as such
+                    string game = String.Format("{0} vs {1}",teams[team1], teams[team2]); // Crude way of storing fixture but works for testing purposes
+                    gw.AddGame(game);   // Add the game to the object list
+                }
+            }
+            gw.Shuffle();   // Shuffle the playing order, to make it visually more random
+            foreach (string g in gw.Games) Console.WriteLine(g); // Print the week
+            Console.WriteLine();*/
+
+            /*List<int> teams = new List<int>() {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}; // List of teams
+
+            bool[,] games = new bool[20,20];    // Checks whether a given game has been played / scheduled
+            for (int a = 0; a < 20; a++) {for (int b = 0; b < 20; b++) games[a,b] = false; }    // Initialises array to set all games to unscheduled / unplayed
+
+            for (int c = 0; c < 20; c++) games[c,c] = true; // Set all games where a team plays itself as true (cannot be selected)
+
+            var yetToPlay = new Dictionary<int, List<int>>();
+            foreach( var team in teams )
+            {
+                yetToPlay[ team ] = new List<int>( teams );
+                yetToPlay[ team ].Remove( team );
+            }
+
+            for (int week = 0; week < teams.Count-1; week++){
+                Console.WriteLine("Week {0}",week+1);
+                var yetToBeAllocated = new List<int>( teams );
+                Console.WriteLine(yetToBeAllocated.Count);
+                int numgames=0;
+                while( yetToBeAllocated.Count > 0 )
+                {
+                    // Pick the home team.
+                    var homeTeam = yetToBeAllocated[ 0 ];
+                    yetToBeAllocated.Remove( homeTeam );
+
+                    // Pick the away team by looking through the list of all the teams the home 
+                    // team has yet to play and comparing it against the teams that have
+                    // not been allocated this round so far.
+                    foreach( var awayTeam in yetToPlay[ homeTeam ] )
+                    {
+                        // This is a fixture!
+                        if( yetToBeAllocated.Contains( awayTeam ) )
+                        {
+                            yetToBeAllocated.Remove( awayTeam );
+                            yetToPlay[ homeTeam ].Remove( awayTeam );
+
+                            Console.WriteLine("{0} vs {1}",homeTeam, awayTeam);
+                            numgames++;
+                            break;
+                        }
+                    }
+                }
+                Console.WriteLine("There are {0} games in this week.",numgames);
+            }*/
+
+            /*
+            List<int> teams = new List<int>() {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}; // List of teams
+
+            bool[,] games = new bool[20,20];    // Checks whether a given game has been played / scheduled
+            for (int a = 0; a < 20; a++) {for (int b = 0; b < 20; b++) games[a,b] = false; }    // Initialises array to set all games to unscheduled / unplayed
+
+            for (int c = 0; c < 20; c++) games[c,c] = true; // Set all games where a team plays itself as true (cannot be selected)
+
+            for (int week = 0; week < 38; week++){   // Loop through each game week
                 var rand = new Random();
                 GameWeek gw = new GameWeek(week+1); // Initialise gameweek object with week number
                 Console.WriteLine("Game Week " + gw.WeekNum);
@@ -1252,6 +1491,7 @@ namespace Footballv2
                 foreach (string g in gw.Games) Console.WriteLine(g); // Print the week
                 Console.WriteLine();
             }
+            */
         }
 
         static void SimulateSeason(){
@@ -1341,11 +1581,11 @@ namespace Footballv2
         // NOTE: A plugin called IronPython seems to be able to execute python scripts from c# - this could be very useful as it means I
         //       wouldnt have to emulate the python script in here, which already looks to be a massive pain
         //          https://ironpython.net/
-        static void csv_to_stats(){
+        static void csv_to_stats(bool step_by_step = false){
             //PrintOne();
             //PrintAllInLeague();
             List<RotatableTeam> Teams = GenerateLeague();
-            SimulateRealSeason(Teams);
+            SimulateRealSeason(Teams, step_by_step);
         }
 
         // TODO:
@@ -1499,7 +1739,7 @@ namespace Footballv2
             //SimulateGame(T1, T2, true);
         }
 
-        static void SimulateRealSeason(List<RotatableTeam> teams){
+        static void SimulateRealSeason(List<RotatableTeam> teams, bool step_by_step = false){
             List<TeamSeasonStats> season = new List<TeamSeasonStats>();
 
             // TODO:
@@ -1529,16 +1769,86 @@ namespace Footballv2
                 season.Add(t0);
 
                 foreach (Player p in t_.Players) playerStats.Add(new PlayerSeasonStats(p, t));
-
-                Console.WriteLine(t0.Team.Name + ":");
-                //foreach (Player p in t0.Team.Players) Console.WriteLine(p.ToString());
-                foreach (Player p in t_.Players) {
-                    //Console.WriteLine("{0}: Finishing {1}, Tackling {2}, Goal Prevention {3}", p.Name, p.Finishing, p.Tackling, p.GoalPrevention);
-                }
-                Console.WriteLine();
             }
 
-            for (int i = 0; i < teams.Count; i++){
+            List<GameWeek> first19 = ListMatches(teams); // Get list of first 19 game weeks
+            first19 = first19.OrderBy(x => Guid.NewGuid()).ToList(); // Shuffle list of weeks
+            //foreach (var gameweek in gameweeks) gameweek.Shuffle(); // Shuffle them
+            int weeknum = 20; // Initialise week number to continue from here
+
+            // var a = gameweeks.Concat(gameweeks);
+            // List<GameWeek> b = a.ToList();
+
+            List<GameWeek> next19 = new List<GameWeek>();
+            foreach (var week in first19){ // Generate next 19 game weeks by reversing each fixture
+                GameWeek gw = new GameWeek(weeknum); // Create new game week
+                foreach (var game in week.Games) gw.AddGame((game.Item2, game.Item1)); // Add reverse of corresponding fixture to list
+                weeknum++; // Increment week number
+                next19.Add(gw); // Add to list
+            }
+            next19 = next19.OrderBy(x => Guid.NewGuid()).ToList(); // Shuffle list
+
+            List<GameWeek> gameweeks = first19.Concat(next19).ToList(); // Append next 19 games onto first 19 games
+
+            weeknum = 1;
+            foreach (var gw in gameweeks) { // Go through each gameweek...
+                gw.Shuffle(); // Shuffle the fixture order
+                gw.WeekNum = weeknum; // Update the week number to be correct
+                weeknum++;
+            }
+            
+            // Print each game week
+            /*foreach (var gameweek in gameweeks) {
+                Console.WriteLine("Game Week {0}:",gameweek.WeekNum);
+                foreach (var game in gameweek.Games) Console.WriteLine("{0} vs {1}",game.Item1.Name, game.Item2.Name);
+                Console.WriteLine();
+            }*/
+
+            //Console.ReadLine();
+
+            foreach (var week in gameweeks){
+                if (step_by_step) Console.WriteLine("Game Week {0}:",week.WeekNum);
+                int i = 0;
+                foreach (var game in week.Games){
+                    TeamSeasonStats t1 = season.Single(p => p.Team.Name == game.Item1.Name);
+                    TeamSeasonStats t2 = season.Single(p => p.Team.Name == game.Item2.Name);
+                    List<int> goals = SimulateGameInSeason(t1.Team, t2.Team, playerStats);
+                    foreach (Player p in t1.Team.Players) playerStats.Find(pl => pl.Player == p).GamesPlayed++;
+                    foreach (Player p in t2.Team.Players) playerStats.Find(pl => pl.Player == p).GamesPlayed++;
+
+                    if (goals[0] > goals[1]) {t1.Wins++; t2.Losses++;}
+                    else if (goals[0] < goals[1]) {t2.Wins++; t1.Losses++;}
+                    else {t1.Draws++; t2.Draws++;}
+
+                    t1.GoalsFor += goals[0];
+                    t2.GoalsFor += goals[1];
+
+                    t1.GoalsAgainst += goals[1];
+                    t2.GoalsAgainst += goals[0];
+
+                    if (step_by_step){
+                        Console.Write("Game {0}:        ",i);
+                        if (goals[0] > goals[1]) Console.ForegroundColor = ConsoleColor.Green;
+                        Console.Write(t1.Team.Name.PadRight(17,' ')); // Name
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.Write(goals[0].ToString().PadRight(2,' '));
+                        Console.Write(" - ");
+                        Console.Write(goals[1].ToString().PadLeft(2,' '));
+                        Console.Write("  ");
+                        if (goals[0] < goals[1]) Console.ForegroundColor = ConsoleColor.Green;
+                        Console.Write(t2.Team.Name.PadRight(17,' ')); // Name
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.Write("\n");
+                    }
+                    i++;
+                }
+                if (step_by_step){
+                    Console.WriteLine("\nPress Enter to continue...");
+                    Console.ReadLine();
+                }
+            }
+
+            /*for (int i = 0; i < teams.Count; i++){
                 for (int j = 0; j < teams.Count; j++){
                     if (i != j){
                         List<int> goals = SimulateGameInSeason(season[i].Team, season[j].Team, playerStats);
@@ -1558,7 +1868,7 @@ namespace Footballv2
                     }
                 }
                 //Console.WriteLine();
-            }
+            }*/
 
             for (int k = 0; k < teams.Count; k++){
                 season[k].calculateGoalDiff();
@@ -1614,9 +1924,10 @@ namespace Footballv2
             Console.WriteLine("0. Simulate Random Season"); // SimulateSeason()
             Console.WriteLine("1. Generate Random Teams"); // SetupTeams()
             Console.WriteLine("2. Load Teams"); // LoadTeam()
-            Console.WriteLine("3. Simulate League Season"); // SimulateRealSeason()
-            Console.WriteLine("4. Simulate Single League Game");
-            Console.WriteLine("5. Debug (Testing Combinations)");
+            Console.WriteLine("3. Simulate League Season (Skip to End)"); // SimulateRealSeason()
+            Console.WriteLine("4. Simulate League Season (Step by Step)"); // SimulateRealSeason(true)
+            Console.WriteLine("5. Simulate Single League Game");
+            Console.WriteLine("6. Debug (Testing Combinations)");
             //Console.WriteLine("4. Create a Team"); // ???
             //Console.WriteLine("5. Create a Player"); // ???
             //Console.WriteLine("6. ");

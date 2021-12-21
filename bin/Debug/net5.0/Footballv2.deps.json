@@ -7,8 +7,19 @@
   "targets": {
     ".NETCoreApp,Version=v5.0": {
       "Footballv2/1.0.0": {
+        "dependencies": {
+          "RoundRobin": "2.1.0"
+        },
         "runtime": {
           "Footballv2.dll": {}
+        }
+      },
+      "RoundRobin/2.1.0": {
+        "runtime": {
+          "lib/netstandard2.0/RoundRobin.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       }
     }
@@ -18,6 +29,13 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "RoundRobin/2.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-KzhSjNs0uIEsP8AMlvSJOn9JYHvayiZRnHuFH0zI1zuM/kYisKGPZJuiyAEsTTh+02Lshgdpvyt05fpDsAJy7A==",
+      "path": "roundrobin/2.1.0",
+      "hashPath": "roundrobin.2.1.0.nupkg.sha512"
     }
   }
 }
