@@ -176,3 +176,21 @@ and these attributes dictate how a player performs. [...]
 - **[Hard]** Allow ability to replay any game stage by stage and see actions
   - This would require storing a log of every event printed to the console during a game
   - Would also require storing when the user needs to press enter to continue the game
+
+---
+
+# Alpha-2
+
+## Changelog v. a.2.2021.12.22.0
+- Added ability to replay matches from seasons action-by-action, and view game stats from those games
+  - New game object is used for these games, which contains an event log of everything printed to the console
+  - It also contains stats for each of the teams to be shown
+  - These match objects can then be re-shown if the user wishes, allowing them to replay games
+
+### Further Steps
+- Store goalscorers, ratings and other match information in this game object, which should also be displayable
+- Allow user to replay multiple games from a gameweek, or even games from earlier weeks eventually
+  - To do multiple in a game week, loop asking until the user does not enter a match number
+  - This will require re-printing the match list after recreating a game, so need to make sure this is done separately from the totalling of wins etc.
+- More use of clearing the console when necessary with `Console.Clear()`
+- Use player ratings to show team of the season / best rated player, which should be relatively easy once the storing of such ratings is done
