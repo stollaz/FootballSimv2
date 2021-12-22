@@ -1264,7 +1264,7 @@ namespace Footballv2
 
     class Program{
 
-        public static string VERSION = "a.2.2021.12.21.0";    // Format: {alpha}.{alpha-number}.{year}.{month}.{day}.{instance}
+        public static string VERSION = "a.2.2021.12.22.0";    // Format: {alpha}.{alpha-number}.{year}.{month}.{day}.{instance}
 
         public static List<string> DATA = new List<string> {
             "NON_PEN_GOALS",
