@@ -30,6 +30,13 @@ namespace Footballv2
 
 }
 
+    enum ItemType{
+        Text,
+        Colour,
+        Read,
+        TextLine
+    }
+
     class Player{
         private string name;
         public string Name{
@@ -318,7 +325,7 @@ namespace Footballv2
                 if (cardValue == 1){
                     cardValue++;
                     sentOff = true;
-                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write("SECOND YELLOW! ");
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.Write(player.Name + " has been sent off for a 2nd bookable offense.\n");
@@ -339,6 +346,50 @@ namespace Footballv2
                 Console.Write("RED CARD! ");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Write(player.Name + " has been sent off.\n");
+                this.sentOff = true;
+            }
+        }
+
+        public void GiveCard(ref Game game, bool isYellow = true){
+            //Console.Write("> ");
+            game.AddToLog(new LogItem(ItemType.Text, "> "));
+            if (isYellow){
+                if (cardValue == 1){
+                    cardValue++;
+                    sentOff = true;
+                    // Console.ForegroundColor = ConsoleColor.Yellow;
+                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Red"));
+                    // Console.Write("SECOND YELLOW! ");
+                    game.AddToLog(new LogItem(ItemType.Text, ("SECOND YELLOW! ")));
+                    // Console.ForegroundColor = ConsoleColor.White;
+                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                    // Console.Write(player.Name + " has been sent off for a 2nd bookable offense.\n");
+                    game.AddToLog(new LogItem(ItemType.Text, (player.Name + " has been sent off for a 2nd bookable offense.\n")));
+                    this.sentOff = true;
+                }
+                else{
+                    cardValue++;
+                    // Console.ForegroundColor = ConsoleColor.Yellow;
+                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Yellow"));
+                    // Console.Write("YELLOW CARD! ");
+                    game.AddToLog(new LogItem(ItemType.Text, ("YELLOW CARD! ")));
+                    // Console.ForegroundColor = ConsoleColor.White;
+                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                    // Console.Write(player.Name + " has been booked.\n");
+                    game.AddToLog(new LogItem(ItemType.Text, (player.Name + " has been booked.\n")));
+                }
+            }
+            else{
+                sentOff = true;
+                cardValue = 2;
+                // Console.ForegroundColor = ConsoleColor.Red;
+                game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Red"));
+                // Console.Write("RED CARD! ");
+                game.AddToLog(new LogItem(ItemType.Text, ("RED CARD! ")));
+                // Console.ForegroundColor = ConsoleColor.White;
+                game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                // Console.Write(player.Name + " has been sent off.\n");
+                game.AddToLog(new LogItem(ItemType.Text, (player.Name + " has been sent off.\n")));
                 this.sentOff = true;
             }
         }
@@ -1064,6 +1115,114 @@ namespace Footballv2
 
     }
 
+    class LogItem{
+        private ItemType itemType;
+        public ItemType ItemType{
+            get { return itemType; }
+            set { itemType = value; }
+        }
+
+        private string itemValue;
+        public string ItemValue{
+            get { return itemValue; }
+            set { itemValue = value; }
+        }
+
+        public LogItem(ItemType type, string value){
+            itemType = type;
+            itemValue = value;
+        }
+
+        public LogItem(string type, string value){
+            switch (type.ToLower()){
+                case "text":
+                    itemType = ItemType.Text;
+                    break;
+                case "string":
+                    itemType = ItemType.Text;
+                    break;
+                case "textline":
+                    itemType = ItemType.TextLine;
+                    break;
+                case "stringline":
+                    itemType = ItemType.TextLine;
+                    break;
+                case "colour":
+                    itemType = ItemType.Colour;
+                    break;
+                case "color":
+                    itemType = ItemType.Colour;
+                    break;
+                case "read":
+                    itemType = ItemType.Read;
+                    break;
+                case "input":
+                    itemType = ItemType.Read;
+                    break;
+                case "enter":
+                    itemType = ItemType.Read;
+                    break;
+                default:
+                    itemType = ItemType.Text;
+                    break;
+            }
+            itemValue = value;
+        }
+    }
+
+    class Game{
+
+        private string id;
+        public string Id{
+            get { return id; }
+            set { id = value; }
+        }
+
+        // Store stats for team 1
+        private TeamGameStats team1Stats;
+        public TeamGameStats Team1Stats{
+            get { return team1Stats; }
+            set { team1Stats = value; }
+        }
+
+        // Store stats for team 2
+        private TeamGameStats team2Stats;
+        public TeamGameStats Team2Stats{
+            get { return team2Stats; }
+            set { team2Stats = value; }
+        }
+
+        private List<int> score;
+        public List<int> Score{
+            get { return score; }
+            set { score = value; }
+        }
+
+        // Store event log for match playback
+        private List<LogItem> eventLog;
+        public List<LogItem> EventLog{
+            get { return eventLog; }
+            set { eventLog = value; }
+        }
+
+        // Add string to event log
+        public void AddToLog(LogItem s){
+            eventLog.Add(s);
+        }
+
+        // Add string to event log and print it out
+        public void AddAndPrint(LogItem s){
+            AddToLog(s);
+            if (s.ItemType==ItemType.Text) Console.WriteLine(s.ItemValue);
+            //if (s.ItemType==ItemType.Colour) Console.ForegroundColor = s.ItemValue; // TODO
+        }
+
+        public Game(string _id){ 
+            id = _id; 
+            eventLog = new List<LogItem>();
+        }
+    }
+
     class GameWeek{
         private List<string> _games; // Store list of games, crudely as a string for now, but should change this eventually, e.g. to a Tuple of RotatableTeam?
         public List<string> _Games{
@@ -1185,19 +1344,7 @@ namespace Footballv2
         };
 
         static void Main(string[] args)
-        {
-            //Player a = new Player("Christiano Ronaldo", 7, Position.ST, 99, 99, 50, 85, 80);
-            //a.DisplayStats();
-
-            //Console.WriteLine(GeneratePlayerName());
-            //Player x = GeneratePlayer();
-
-            //x.DisplayStats();
-
-            //Console.WriteLine(GenerateTeamName());
-
-            //SetupTeams();
-            
+        {            
             while (true){
                 int option = StartMenu();
                 switch(option){
@@ -1319,16 +1466,12 @@ namespace Footballv2
 
                 int teamIdx = day % teamsSize;
 
-                //Console.WriteLine("{0} vs {1}", teams[teamIdx], ListTeam[0]);
-                //gw.AddGame(String.Format("{0} vs {1}", teams[teamIdx], ListTeam[0]));
                 gw.AddGame((teams[teamIdx], ListTeam[0]));
 
                 for (int idx = 1; idx < halfSize; idx++)
                 {               
                     int firstTeam = (day + idx) % teamsSize;
                     int secondTeam = (day  + teamsSize - idx) % teamsSize;
-                    //Console.WriteLine("{0} vs {1}", teams[firstTeam], teams[secondTeam]);
-                    //gw.AddGame(String.Format("{0} vs {1}", teams[firstTeam], teams[secondTeam]));
                     gw.AddGame((teams[firstTeam], teams[secondTeam]));
                 }
                 Fixtures.Add(gw);
@@ -1345,153 +1488,6 @@ namespace Footballv2
                 Console.WriteLine("Game Week {0}",f.WeekNum);
                 foreach (var g in f.Games) Console.WriteLine(g);
             }
-
-            /*List<int> teams = new List<int>() {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}; // List of teams
-
-            bool[,] games = new bool[20,20];    // Checks whether a given game has been played / scheduled
-            for (int a = 0; a < 20; a++) {for (int b = 0; b < 20; b++) games[a,b] = false; }    // Initialises array to set all games to unscheduled / unplayed
-
-            for (int c = 0; c < 20; c++) games[c,c] = true; // Set all games where a team plays itself as true (cannot be selected)
-
-            List<(int,int)> fixtures = new List<(int,int)>();
-            for (int a = 0; a < 20; a++){
-                for (int b = 0; b < 20; b++){
-                    if (a!=b) fixtures.Add((a,b));
-                }
-            }
-
-            
-
-            Console.WriteLine(fixtures.Count);
-
-            var pos = fixtures.Where(p => p.Item1 == 0 || p.Item2 == 0);
-
-            Console.WriteLine(pos.Count());
-
-            for (int week = 0; week < 19; week++){
-                Console.WriteLine("Week {0}",week);
-                bool done = false;
-                while(!done){
-                    bool[] playingThisWeek = new bool[20];  // Array to store whether a team has been scheduled to play this week yet
-                    for (int z = 0; z < 20; z++) playingThisWeek[z] = false;    // Initialise all teams to false (not scheduled to play yet)
-
-                    for (int team1 = 0; team1 < 20; team1++){
-                        var fixs = fixtures.Where(p => ((p.Item1 == team1 && !playingThisWeek[p.Item2]) || (p.Item2 == team1 && !playingThisWeek[p.Item1])));
-                        if (fixs.Count() == 0) break;
-                        else{
-                            var fix = fixs.ElementAt(0);
-                            var t1 = fix.Item1;
-                            var t2 = fix.Item2;
-                            playingThisWeek[t1] = true;
-                            playingThisWeek[t2] = true;
-
-                            Console.WriteLine("{0} vs {1}",t1,t2);
-                        }
-                    }
-
-                    if (playingThisWeek.All(p => p==true)) done = true;
-                }
-            }*/
-                
-            /*var rand = new Random();
-            GameWeek gw = new GameWeek(week+1); // Initialise gameweek object with week number
-            Console.WriteLine("Game Week " + gw.WeekNum);
-            bool[] playingThisWeek = new bool[20];  // Array to store whether a team has been scheduled to play this week yet
-            for (int z = 0; z < 20; z++) playingThisWeek[z] = false;    // Initialise all teams to false (not scheduled to play yet)
-
-            for (int team1 = 0; team1 < 20; team1++){   // Loop through each team to generate fixtures
-                if ((week + team1) % 2 == 0){   // Alternate whether odd or even teams are at home, depending on the week
-                    playingThisWeek[team1] = true;  // The first team is scheduled to play now
-
-                    int team2 = team1;  // Initialise their opponent to be the same as the home team, so checks are easy
-                    while (games[team1,team2] == true || playingThisWeek[team2] == true) team2 = rand.Next(0,20);   // While this game has already been scheduled, or the team selected has already been scheduled this week, re-roll away team
-                    games[team1,team2] = true;  // This combination now has been scheduled, so mark it as such
-                    playingThisWeek[team2] = true;  // Similarly, the away team has now been scheduled to play this week, so mark it as such
-                    string game = String.Format("{0} vs {1}",teams[team1], teams[team2]); // Crude way of storing fixture but works for testing purposes
-                    gw.AddGame(game);   // Add the game to the object list
-                }
-            }
-            gw.Shuffle();   // Shuffle the playing order, to make it visually more random
-            foreach (string g in gw.Games) Console.WriteLine(g); // Print the week
-            Console.WriteLine();*/
-
-            /*List<int> teams = new List<int>() {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}; // List of teams
-
-            bool[,] games = new bool[20,20];    // Checks whether a given game has been played / scheduled
-            for (int a = 0; a < 20; a++) {for (int b = 0; b < 20; b++) games[a,b] = false; }    // Initialises array to set all games to unscheduled / unplayed
-
-            for (int c = 0; c < 20; c++) games[c,c] = true; // Set all games where a team plays itself as true (cannot be selected)
-
-            var yetToPlay = new Dictionary<int, List<int>>();
-            foreach( var team in teams )
-            {
-                yetToPlay[ team ] = new List<int>( teams );
-                yetToPlay[ team ].Remove( team );
-            }
-
-            for (int week = 0; week < teams.Count-1; week++){
-                Console.WriteLine("Week {0}",week+1);
-                var yetToBeAllocated = new List<int>( teams );
-                Console.WriteLine(yetToBeAllocated.Count);
-                int numgames=0;
-                while( yetToBeAllocated.Count > 0 )
-                {
-                    // Pick the home team.
-                    var homeTeam = yetToBeAllocated[ 0 ];
-                    yetToBeAllocated.Remove( homeTeam );
-
-                    // Pick the away team by looking through the list of all the teams the home 
-                    // team has yet to play and comparing it against the teams that have
-                    // not been allocated this round so far.
-                    foreach( var awayTeam in yetToPlay[ homeTeam ] )
-                    {
-                        // This is a fixture!
-                        if( yetToBeAllocated.Contains( awayTeam ) )
-                        {
-                            yetToBeAllocated.Remove( awayTeam );
-                            yetToPlay[ homeTeam ].Remove( awayTeam );
-
-                            Console.WriteLine("{0} vs {1}",homeTeam, awayTeam);
-                            numgames++;
-                            break;
-                        }
-                    }
-                }
-                Console.WriteLine("There are {0} games in this week.",numgames);
-            }*/
-
-            /*
-            List<int> teams = new List<int>() {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19}; // List of teams
-
-            bool[,] games = new bool[20,20];    // Checks whether a given game has been played / scheduled
-            for (int a = 0; a < 20; a++) {for (int b = 0; b < 20; b++) games[a,b] = false; }    // Initialises array to set all games to unscheduled / unplayed
-
-            for (int c = 0; c < 20; c++) games[c,c] = true; // Set all games where a team plays itself as true (cannot be selected)
-
-            for (int week = 0; week < 38; week++){   // Loop through each game week
-                var rand = new Random();
-                GameWeek gw = new GameWeek(week+1); // Initialise gameweek object with week number
-                Console.WriteLine("Game Week " + gw.WeekNum);
-                bool[] playingThisWeek = new bool[20];  // Array to store whether a team has been scheduled to play this week yet
-                for (int z = 0; z < 20; z++) playingThisWeek[z] = false;    // Initialise all teams to false (not scheduled to play yet)
-
-                for (int team1 = 0; team1 < 20; team1++){   // Loop through each team to generate fixtures
-                    if ((week + team1) % 2 == 0){   // Alternate whether odd or even teams are at home, depending on the week
-                        playingThisWeek[team1] = true;  // The first team is scheduled to play now
-
-                        int team2 = team1;  // Initialise their opponent to be the same as the home team, so checks are easy
-                        while (games[team1,team2] == true || playingThisWeek[team2] == true) team2 = rand.Next(0,20);   // While this game has already been scheduled, or the team selected has already been scheduled this week, re-roll away team
-                        games[team1,team2] = true;  // This combination now has been scheduled, so mark it as such
-                        playingThisWeek[team2] = true;  // Similarly, the away team has now been scheduled to play this week, so mark it as such
-                        string game = String.Format("{0} vs {1}",teams[team1], teams[team2]); // Crude way of storing fixture but works for testing purposes
-                        gw.AddGame(game);   // Add the game to the object list
-                    }
-                }
-                gw.Shuffle();   // Shuffle the playing order, to make it visually more random
-                foreach (string g in gw.Games) Console.WriteLine(g); // Print the week
-                Console.WriteLine();
-            }
-            */
         }
 
         static void SimulateSeason(){
@@ -1523,7 +1519,8 @@ namespace Footballv2
             for (int i = 0; i < 20; i++){
                 for (int j = 0; j < 20; j++){
                     if (i != j){
-                        List<int> goals = SimulateGameInSeason(season[i].Team, season[j].Team);
+                        Game g = SimulateGameInSeason(season[i].Team, season[j].Team);
+                        List<int> goals = g.Score;
                         if (goals[0] > goals[1]) {season[i].Wins++; season[j].Losses++;}
                         else if (goals[0] < goals[1]) {season[j].Wins++; season[i].Losses++;}
                         else {season[i].Draws++; season[j].Draws++;}
@@ -1739,6 +1736,36 @@ namespace Footballv2
             //SimulateGame(T1, T2, true);
         }
 
+        static void RecreateGameFromLog(Game game){
+            PrintStats(game.Team1Stats, game.Team2Stats);
+            Console.WriteLine("\nWould you like to step through this game action by action? (Y/N)");
+            Console.Write("> ");
+            string s = Console.ReadLine();
+            if (s.ToLower() == "y" || s.ToLower() == "yes"){
+                Console.Clear();
+                foreach (var item in game.EventLog){
+                    switch(item.ItemType){
+                        case ItemType.Read:
+                            Console.Read();
+                            break;
+                        case ItemType.Colour:
+                            string c = item.ItemValue.Split('.')[1];
+                            Console.ForegroundColor = (ConsoleColor) Enum.Parse(typeof(ConsoleColor), c);
+                            break;
+                        case ItemType.Text:
+                            Console.Write(item.ItemValue);
+                            break;
+                        case ItemType.TextLine:
+                            Console.WriteLine(item.ItemValue);
+                            break;
+                        default:
+                            throw new ArgumentException("Invalid item type.");
+                    }
+                }
+            }
+            Console.Clear();
+        }
+
         static void SimulateRealSeason(List<RotatableTeam> teams, bool step_by_step = false){
             List<TeamSeasonStats> season = new List<TeamSeasonStats>();
 
@@ -1809,10 +1836,14 @@ namespace Footballv2
             foreach (var week in gameweeks){
                 if (step_by_step) Console.WriteLine("Game Week {0}:",week.WeekNum);
                 int i = 0;
+                List<Game> gamesInWeek = new List<Game>();
                 foreach (var game in week.Games){
                     TeamSeasonStats t1 = season.Single(p => p.Team.Name == game.Item1.Name);
                     TeamSeasonStats t2 = season.Single(p => p.Team.Name == game.Item2.Name);
-                    List<int> goals = SimulateGameInSeason(t1.Team, t2.Team, playerStats);
+                    Game g = SimulateGameInSeason(t1.Team, t2.Team, playerStats);
+                    gamesInWeek.Add(g);
+
+                    List<int> goals = g.Score;
                     foreach (Player p in t1.Team.Players) playerStats.Find(pl => pl.Player == p).GamesPlayed++;
                     foreach (Player p in t2.Team.Players) playerStats.Find(pl => pl.Player == p).GamesPlayed++;
 
@@ -1827,24 +1858,32 @@ namespace Footballv2
                     t2.GoalsAgainst += goals[0];
 
                     if (step_by_step){
+                        ConsoleColor currentForeground = Console.ForegroundColor;
                         Console.Write("Game {0}:        ",i);
                         if (goals[0] > goals[1]) Console.ForegroundColor = ConsoleColor.Green;
                         Console.Write(t1.Team.Name.PadRight(17,' ')); // Name
-                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.ForegroundColor = currentForeground;
                         Console.Write(goals[0].ToString().PadRight(2,' '));
                         Console.Write(" - ");
                         Console.Write(goals[1].ToString().PadLeft(2,' '));
                         Console.Write("  ");
                         if (goals[0] < goals[1]) Console.ForegroundColor = ConsoleColor.Green;
                         Console.Write(t2.Team.Name.PadRight(17,' ')); // Name
-                        Console.ForegroundColor = ConsoleColor.Gray;
+                        Console.ForegroundColor = currentForeground;
                         Console.Write("\n");
                     }
                     i++;
                 }
                 if (step_by_step){
-                    Console.WriteLine("\nPress Enter to continue...");
-                    Console.ReadLine();
+                    Console.WriteLine("\nEnter a game number to get stats on that game.");
+                    Console.WriteLine("Otherwise, press Enter to continue...");
+                    Console.Write("> ");
+                    int num = -1;
+                    try { num = int.Parse(Console.ReadLine()); } catch {}
+                    if (num > -1 && num <= 9){
+                        Console.Clear();
+                        RecreateGameFromLog(gamesInWeek.ElementAt(num));
+                    }
                 }
             }
 
@@ -1989,12 +2028,38 @@ namespace Footballv2
             Console.Write("] - " + team2_score + " " + team2.Name + "\n"); // Print current score
         }
 
+        static void ShowTeam1Scored(ref Game game, Team team1, Team team2, int team1_score, int team2_score){
+            // Console.Write("> " + team1.Name + " [");
+            game.AddToLog(new LogItem(ItemType.Text, ("> " + team1.Name + " [")));
+            // Console.ForegroundColor = ConsoleColor.Green;
+            game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+            // Console.Write(team1_score);
+            game.AddToLog(new LogItem(ItemType.Text, team1_score.ToString()));
+            // Console.ForegroundColor = ConsoleColor.White;
+            game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+            // Console.Write("] - " + team2_score + " " + team2.Name + "\n"); // Print current score
+            game.AddToLog(new LogItem(ItemType.Text, ("] - " + team2_score + " " + team2.Name + "\n")));
+        }
+
         static void ShowTeam2Scored(Team team1, Team team2, int team1_score, int team2_score){
             Console.Write("> " + team1.Name + " " + team1_score + " - [");
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(team2_score);
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("] " + team2.Name + "\n"); // Print current score
+        }
+
+        static void ShowTeam2Scored(ref Game game, Team team1, Team team2, int team1_score, int team2_score){
+            // Console.Write("> " + team1.Name + " " + team1_score + " - [");
+            game.AddToLog(new LogItem(ItemType.Text, ("> " + team1.Name + " " + team1_score + " - [")));
+            // Console.ForegroundColor = ConsoleColor.Green;
+            game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+            // Console.Write(team2_score);
+            game.AddToLog(new LogItem(ItemType.Text, team2_score.ToString()));
+            // Console.ForegroundColor = ConsoleColor.White;
+            game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+            // Console.Write("] " + team2.Name + "\n"); // Print current score
+            game.AddToLog(new LogItem(ItemType.Text, ("] " + team2.Name + "\n")));
         }
 
         static void PrintStats(TeamGameStats team1, TeamGameStats team2){
@@ -2025,64 +2090,8 @@ namespace Footballv2
             Console.WriteLine("Red Cards".PadRight(17,' ') + team1.RedCards.ToString().PadLeft(padValue,' ') + " - " + team2.RedCards.ToString().PadRight(padValue,' '));
             Console.WriteLine("Shot Accuracy".PadRight(17,' ') + (team1.ShotAccuracy.ToString() + "%").PadLeft(padValue,' ') + " - " + (team2.ShotAccuracy.ToString() + "%").PadRight(padValue,' '));
             Console.WriteLine("Pass Accuracy".PadRight(17,' ') + (team1.PassAccuracy.ToString() + "%").PadLeft(padValue,' ') + " - " + (team2.PassAccuracy.ToString() + "%").PadRight(padValue,' '));
-            /*
-            Posession
-            Shots
-            Shots On Target
-            Passes Attempted
-            Passes Completed
-            Saves
-            Tackles
-            Interceptions
-            Fouls
-            Yellow Cards
-            Red Cards
-            Shot Accuracy
-            Pass Accuracy
-            */
         }
 
-        // TODO:
-        // >Implement misses for shots rather than goal or save, base upon finishing and / or mentality
-        //      Could also have blocks based on defence strength of defensive line, offset by control of shooter
-        //              *DONE BASED ON FINISHING*
-        // >Have only one team make an action per minute
-        //      Maybe base this upon which team is better, or just alternate
-        //              *DONE ALTERNATING*
-        // >Implement stats (e.g. shots, tackles, posession, saves)
-        //      Maybe implement player ratings for the game, improved for successful tackles, interceptions, saves, on target shots, reduced for failed dribbles, passes, missed shots
-        //              *DONE STATS FOR ENDGAME, NOT PLAYER RATINGS*
-        //              *DONE PLAYER RATINGS, THOUGH NEED SOME TWEAKING AS THEY DON'T ALWAYS -SEEM- RIGHT*
-        // >Implement fouls for tackles, chance for foul based on tackling player's mentality and / or control
-        //      Chance for a foul to be a simple foul, yellow card or red card again based on above
-        //      Chance for a foul to be a free kick or a penalty based on who is fouled and who fouled them - treat as a shot maybe with some bias
-        //              *DONE, NOT CARDS THOUGH*
-        //              *WOULD NEED TO KEEP TRACK OF CARDS AND EXCLUDE PLAYERS SOMEHOW TO DO CARDS*
-        //              *this can be done using the PlayerGameStats class but I haven't implemented bookings yet, or how they wuold function*
-        // >Weight random player choice towards certain positions based on the action occuring
-        //      e.g. bias towards defenders / dms when tackling, midfielders when intercepting, midfielders / forwards when choosing a pass
-        //      Alternatively (or additionally) could choose action based on what player is doing the action, e.g. striker more likely to shoot, winger more likely to dribble
-        //              *DONE IN LATTER WAY, PLAYERS MORE LIKELY TO CHOOSE ACTIONS THAT MAKE SENSE E.G. STRIKERS MORE LIKELY TO SHOOT, DEFENDERS MORE LIKELY TO PASS ETC.*
-
-        // TODO 2:
-        // Tweak player ratings to -seem- more correct
-        // Tweak card threshold for fouls - red cards seem way too common
-        // Tweak goalscoring chances - goals are too frequent (many games end e.g 6-5)
-        // Tweak pass and interception chances - pass accuracy is frequently 0%
-        //      Same with tackles, they seem very common compared to completed dribbles
-        //              *tweaked the offset for AttemptPass() and AttemptDribble() sigmoid calls, and used pace instead of control for dribbles - seems a bit better?*
-        // Utilise Pace somehow, turns out it's never used
-        // Use https://www.fifacm.com/players to make real-world teams, where:
-        //      Pace = Sprint Speed
-        //      Finishing = Finishing
-        //      Defence = Def. Awareness (or GK Diving for keepers)
-        //      Control = Ball Control (or composure)
-        //      Mentality = Composure (or maybe 100-aggression)
-        //              Composure is apparently not the right metric to use for mentality and is much more applicable to the Control stat
-        //              Mentality does not seem to have a good analogue in FIFA21 sadly - using 100-Aggression leads to most players having low mentality scores,
-        //                  which leads to them giving away lots of fouls and as a result lots of red cards and goals
-        //              Need to find a good mentric for Mentality
-        // NOTE: https://www.desmos.com/calculator/kn9tpwdan5
         static void SimulateGame(Team team1, Team team2, bool show = true){
             Console.WriteLine("Welcome to the game between " + team1.Name + " and " + team2.Name + "!\n");
 
@@ -2620,9 +2629,13 @@ namespace Footballv2
         // Make it so that these season game simulations utilise bookings and red cards
         // Maybe have some end of season stats display at the end, e.g. best player (highest average rating), top scorer (most goals), etc.
         // Use ratings as well
-        static List<int> SimulateGameInSeason(Team team1, Team team2, List<PlayerSeasonStats> playerStats = null){
+        static Game SimulateGameInSeason(Team team1, Team team2, List<PlayerSeasonStats> playerStats = null){
             int team1_score = 0;
             int team2_score = 0;
+
+            Game game = new Game(String.Format("{0} v {1}",team1.Name, team2.Name));
+
+            game.AddToLog(new LogItem(ItemType.TextLine, String.Format("Welcome to the game between " + team1.Name + " and " + team2.Name + "!\n")));
 
             List<Goal> goals = new List<Goal>();
 
@@ -2641,12 +2654,17 @@ namespace Footballv2
 
             bool isTeam1 = true;
 
-            for (int i = 3; i <= 90; i+=3){ // Simulate in 5 minute increments
-                //Console.WriteLine("");
-                //Console.WriteLine(i + "th Minute\n" + team1.Name + " " + team1_score + " - " + team2_score + " " + team2.Name); // Print current score
-                //Console.WriteLine("===");
+            game.AddToLog(new LogItem(ItemType.TextLine, "Press ENTER to begin game, and to advance through the game"));
+            game.AddToLog(new LogItem(ItemType.Read, ""));
 
-                // Decide whether a pass, dribble or shot is attempted
+            for (int i = 3; i <= 90; i+=3){ // Simulate in 5 minute increments
+                game.AddToLog(new LogItem(ItemType.TextLine, ""));
+                if (i%10==1 && i!=11) game.AddToLog(new LogItem(ItemType.TextLine, (i + "st Minute")));
+                else if (i%10==2 && i!=12) game.AddToLog(new LogItem(ItemType.TextLine, (i + "nd Minute")));
+                else if (i%10==3 && i!=13) game.AddToLog(new LogItem(ItemType.TextLine, (i + "rd Minute")));
+                else game.AddToLog(new LogItem(ItemType.TextLine, (i + "th Minute")));
+                game.AddToLog(new LogItem(ItemType.TextLine, (team1.Name + " " + team1_score + " - " + team2_score + " " + team2.Name))); // Print current score
+                game.AddToLog(new LogItem(ItemType.TextLine, "==="));
 
                 int choice = r.Next(0,3); // 0 = pass, 1 = dribble, 2 = shot
 
@@ -2658,6 +2676,11 @@ namespace Footballv2
                 while (q1.InGameStats.SentOff) q1 = team1.Players[r.Next(1,11)]; 
                 Player q2 = team2.Players[r.Next(1,11)]; // Pick a random player from team 2
                 while (q2.InGameStats.SentOff) q2 = team2.Players[r.Next(1,11)];
+
+                PlayerInGame p1_ = playersInGames1.Find(p => p.Player.Equals(p1));
+                PlayerInGame p2_ = playersInGames2.Find(p => p.Player.Equals(p2));
+                PlayerInGame q1_ = playersInGames1.Find(p => p.Player.Equals(q1));
+                PlayerInGame q2_ = playersInGames2.Find(p => p.Player.Equals(q2));
 
                 if (isTeam1){
                     Position pos = p1.Position;
@@ -2674,21 +2697,35 @@ namespace Footballv2
                         while (p3 == p1) p3 = team1.Players[r.Next(0,11)];
                         PlayerInGame p3_ = playersInGames1.Find(p => p.Player.Equals(p3));
                         //Console.WriteLine("> [" + team1.Name + "] " + p1.Name + " attempts to pass to " + p3.Name + ".");
+                        game.AddToLog(new LogItem(ItemType.TextLine, ("> [" + team1.Name + "] " + p1.Name + " attempts to pass to " + p3.Name + ".")));
 
-                        bool passed = AttemptPass(p1, p3, p2, false);
+                        bool passed = AttemptPass(ref game, p1, p3, p2, false);
 
                         if (passed){
+                            team1stats.Posession+=3; // Alter posession numbers accordingly
+                            team2stats.Posession-=3; 
+                            team1stats.Passes++; // Increment successful passes
+
+                            //p1_.Rating+=0.5; // Alter player ratings accordingly
+                            //p3_.Rating+=0.5;
+                            p1.InGameStats.Rating+=0.5; // Alter player ratings accordingly
+                            p3.InGameStats.Rating+=0.3;
                             // If new player (p3) has high finishing and high mentality, take a shot
                             // Otherwise attack fails
                             if (p3.Finishing >= 50){
                                 int a = r.Next(0,100);
                                 if (p3.Mentality > a){
                                     // shoot
-                                    bool scored = AttemptShot(team1stats, team2stats, p3, true, false);
+                                    bool scored = AttemptShot(ref game, team1stats, team2stats, p3, true, false);
                                     if (scored) {
                                         team1_score++;
 
-                                        //ShowTeam1Scored(team1, team2, team1_score, team2_score);
+                                        //ShowTeam1Scored(ref game, team1, team2, team1_score, team2_score);
+                                        game.AddToLog(new LogItem(ItemType.Text, ("> " + team1.Name + " [")));
+                                        game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+                                        game.AddToLog(new LogItem(ItemType.Text, team1_score.ToString()));
+                                        game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                                        game.AddToLog(new LogItem(ItemType.Text, ("] - " + team2_score + " " + team2.Name + "\n")));
 
                                         goals.Add(new Goal(p3.Name, team1.Name, i));
                                         try{playerStats.Find(pl => pl.Player == p3).GoalsScored++;
@@ -2698,17 +2735,28 @@ namespace Footballv2
                             }
                         }
                         else{
+                            team2stats.Posession+=3;
+                            team1stats.Posession-=3;
+                            team2stats.Interceptions++;
+
+                            p1.InGameStats.Rating-=0.5;
+                            p2.InGameStats.Rating+=0.5;
                             // If new player (p2) has high finishing and high mentality, take a shot
                             // Otherwise attack fails
                             if (p2.Finishing >= 50){
                                 int a = r.Next(0,100);
                                 if (p2.Mentality > a){
                                     // shoot
-                                    bool scored = AttemptShot(team1stats, team2stats, p2, false, false);
+                                    bool scored = AttemptShot(ref game, team1stats, team2stats, p2, false, false);
                                     if (scored) {
                                         team2_score++;
 
-                                        //ShowTeam2Scored(team1, team2, team1_score, team2_score);
+                                        // ShowTeam2Scored(ref game, team1, team2, team1_score, team2_score);
+                                        game.AddToLog(new LogItem(ItemType.Text, ("> " + team1.Name + " " + team1_score + " - [")));
+                                        game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+                                        game.AddToLog(new LogItem(ItemType.Text, team2_score.ToString()));
+                                        game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                                        game.AddToLog(new LogItem(ItemType.Text, ("] " + team2.Name + "\n")));
 
                                         goals.Add(new Goal(p2.Name, team2.Name, i));
                                         try{playerStats.Find(pl => pl.Player == p2).GoalsScored++;}catch{}
@@ -2720,19 +2768,29 @@ namespace Footballv2
                     else if (choice == 1){
                         // dribble then chance to shoot
                         //Console.WriteLine("> [" + team1.Name + "] " + p1.Name + " attempts to dribble.");
-                        bool dribbled = AttemptDribble(p1, p2, false);
+                        game.AddToLog(new LogItem(ItemType.TextLine, ("> [" + team1.Name + "] " + p1.Name + " attempts to dribble.")));
+                        bool dribbled = AttemptDribble(ref game, p1, p2, false);
                         if (dribbled){
+                            p1.InGameStats.Rating+=0.5;
+                            p2.InGameStats.Rating-=0.1;
+                            team1stats.Posession+=3;
+                            team2stats.Posession-=3;
                             // If player (p1) has high finishing and high mentality, take a shot
                             // Otherwise attack fails
                             if (p1.Finishing >= 50){
                                 int a = r.Next(0,100);
                                 if (p1.Mentality > a){
                                     // shoot
-                                    bool scored = AttemptShot(team1stats, team2stats, p1, true, false);
+                                    bool scored = AttemptShot(ref game, team1stats, team2stats, p1, true, false);
                                     if (scored) {
                                         team1_score++;
                                         
-                                        //ShowTeam1Scored(team1, team2, team1_score, team2_score);
+                                        // ShowTeam1Scored(ref game, team1, team2, team1_score, team2_score);
+                                        game.AddToLog(new LogItem(ItemType.Text, ("> " + team1.Name + " [")));
+                                        game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+                                        game.AddToLog(new LogItem(ItemType.Text, team1_score.ToString()));
+                                        game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                                        game.AddToLog(new LogItem(ItemType.Text, ("] - " + team2_score + " " + team2.Name + "\n")));
 
                                         goals.Add(new Goal(p1.Name, team1.Name, i));
                                         try{playerStats.Find(pl => pl.Player == p1).GoalsScored++;}catch{}
@@ -2740,33 +2798,111 @@ namespace Footballv2
                                 }
                             }
                         }
-                        else{
-                            // If new player (p2) has high finishing and high mentality, take a shot
-                            // Otherwise attack fails
-                            if (p2.Finishing >= 50){
-                                int a = r.Next(0,100);
-                                if (p2.Mentality > a){
-                                    // shoot
-                                    bool scored = AttemptShot(team1stats, team2stats, p2, false, false);
-                                    if (scored) {
-                                        team2_score++;
-                                        
-                                        //ShowTeam2Scored(team1, team2, team1_score, team2_score);
+                        team2stats.Tackles++;
+                            // If tackling player has low mentality have a chance to commit a foul
+                            int b = r.Next(0,50);
+                            if (p2.Mentality < b){
+                                p2.InGameStats.Rating-=0.3;
+                                team2stats.Fouls++;
+                                ///*if (show) */Console.WriteLine(p2.Name + " fouled " + p1.Name + ".");
+                                game.AddToLog(new LogItem(ItemType.TextLine, (p2.Name + " fouled " + p1.Name + ".")));
 
-                                        goals.Add(new Goal(p2.Name, team2.Name, i));
-                                        try {playerStats.Find(pl => pl.Player == p2).GoalsScored++;}catch{}
+                                // Decide if a card should be shown
+                                // IDEA: Change goals thingy to events, store cards in it too?
+                                int yellowNum = GenerateNormal(30,10);
+                                double yellowThreshold = Sigmoid(yellowNum, p2.Mentality,-0.05,0);
+                                int redNum = GenerateNormal(5,2); // https://www.desmos.com/calculator/2kmx0enkkz
+                                double redThreshold = Sigmoid(redNum, p2.Mentality,-0.063,0.5);
+                                while (redThreshold > yellowThreshold) {redNum = GenerateNormal(5,2); redThreshold = Sigmoid(redNum, p2.Mentality,-0.063,0.5);}
+                                double randnum = r.NextDouble();
+                                //Console.WriteLine("DEBUG: ");
+                                //Console.WriteLine("yellowThreshold = " + yellowNum + ", redThreshold = " + redNum + ", mentality = " + p2.Mentality);
+                                //Console.WriteLine("yellowChance = " + yellowThreshold + ", redChance = " + redThreshold + ", randnum = " + randnum);
+                                if (randnum < redThreshold){
+                                    //Console.WriteLine("should send off...");
+                                    p2.InGameStats.GiveCard(ref game, false);
+                                    p2.InGameStats.Rating-=2;
+                                    team2stats.RedCards++;
+                                }
+                                else if (randnum < yellowThreshold){
+                                    //Console.WriteLine("should book...");
+                                    p2.InGameStats.GiveCard(ref game);
+                                    p2.InGameStats.Rating-=0.5;
+                                    team2stats.YellowCards++;
+                                }
+                                //else Console.WriteLine("should do nothing...");
+
+                                bool scored;
+                                if (p1.Position == Position.ST || p1.Position == Position.AM){
+                                    scored = AttemptSetpiece(ref game, team1stats, team2stats, false, isTeam1);
+                                }
+                                else if (p1.Position == Position.LW || p1.Position == Position.RW || p1.Position == Position.LM || p1.Position == Position.RM || p1.Position == Position.CM){
+                                    int c = r.Next(0,100);
+                                    if (p1.Mentality > c) {
+                                        scored = AttemptSetpiece(ref game, team1stats, team2stats, false, isTeam1);
+                                    }
+                                    else{
+                                        scored = AttemptSetpiece(ref game, team1stats, team2stats, true, isTeam1);
+                                    }
+                                }
+                                else{
+                                    scored = AttemptSetpiece(ref game, team1stats, team2stats, true, isTeam1);
+                                }
+                                if (scored) {
+                                    team1_score++;
+                                    // ShowTeam1Scored(ref game, team1, team2, team1_score, team2_score);
+                                    game.AddToLog(new LogItem(ItemType.Text, ("> " + team1.Name + " [")));
+                                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+                                    game.AddToLog(new LogItem(ItemType.Text, team1_score.ToString()));
+                                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                                    game.AddToLog(new LogItem(ItemType.Text, ("] - " + team2_score + " " + team2.Name + "\n")));
+                                    goals.Add(new Goal (getSetPieceTaker(team1).Name, team1.Name,i));
+                                }
+                            }
+                            else{
+                                p2.InGameStats.Rating+=0.5;
+                                team2stats.Posession+=3;
+                                team1stats.Posession-=3;
+                                ///*if (show) */Console.WriteLine(p2.Name + " tackles " + p1.Name + ".");
+                                game.AddToLog(new LogItem(ItemType.TextLine, (p2.Name + " tackles " + p1.Name + ".")));
+                                // If new player (p2) has high finishing and high mentality, take a shot
+                                // Otherwise attack fails
+                                if (p2.Finishing >= 50){
+                                    int a = r.Next(0,100);
+                                    if (p2.Mentality > a){
+                                        // shoot
+                                        //team2stats.Shots++;
+                                        bool scored = AttemptShot(ref game, team1stats, team2stats, p2, false);
+                                        if (scored) {
+                                            team2_score++;
+                                            
+                                            // ShowTeam2Scored(ref game, team1, team2, team1_score, team2_score);
+                                            game.AddToLog(new LogItem(ItemType.Text, ("> " + team1.Name + " " + team1_score + " - [")));
+                                            game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+                                            game.AddToLog(new LogItem(ItemType.Text, team2_score.ToString()));
+                                            game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                                            game.AddToLog(new LogItem(ItemType.Text, ("] " + team2.Name + "\n")));
+
+                                            goals.Add(new Goal(p2.Name, team2.Name, i));
+                                        }
                                     }
                                 }
                             }
-                        }
                     }
                     else{
+                        team1stats.Posession+=2;
+                        team2stats.Posession-=2;
                         // shoot
-                        bool scored = AttemptShot(team1stats, team2stats, p1, true, false);
+                        bool scored = AttemptShot(ref game, team1stats, team2stats, p1, true, false);
                         if (scored) {
                             team1_score++;
                             
-                            //ShowTeam1Scored(team1, team2, team1_score, team2_score);
+                            // ShowTeam1Scored(ref game, team1, team2, team1_score, team2_score);
+                            game.AddToLog(new LogItem(ItemType.Text, ("> " + team1.Name + " [")));
+                            game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+                            game.AddToLog(new LogItem(ItemType.Text, team1_score.ToString()));
+                            game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                            game.AddToLog(new LogItem(ItemType.Text, ("] - " + team2_score + " " + team2.Name + "\n")));
 
                             goals.Add(new Goal(p1.Name, team1.Name, i));
                             try{playerStats.Find(pl => pl.Player == p1).GoalsScored++;}catch{}
@@ -2782,6 +2918,8 @@ namespace Footballv2
                     }
                 }
                 else{
+                    team2stats.Posession+=2;
+                    team1stats.Posession-=2;
                     Position pos = q1.Position;
                     if (pos == Position.CB || pos == Position.LB || pos == Position.RB){
                         if (choice == 2) choice = r.Next(0,3);
@@ -2793,22 +2931,36 @@ namespace Footballv2
                         // pass then chance to shoot
                         Player q3 = team2.Players[r.Next(0,11)];
                         while (q3 == q1) q3 = team2.Players[r.Next(0,11)];
+                        PlayerInGame q3_ = playersInGames2.Find(p => p.Player.Equals(q3));
                         //Console.WriteLine("> [" + team2.Name + "] " + q2.Name + " attempts to pass to " + q3.Name + ".");
+                        game.AddToLog(new LogItem(ItemType.TextLine, ("> [" + team2.Name + "] " + q2.Name + " attempts to pass to " + q3.Name + ".")));
 
-                        bool passed = AttemptPass(q2, q3, q1, false);
+                        bool passed = AttemptPass(ref game, q2, q3, q1, false);
+                        team2stats.PassesAttempted++;
 
                         if (passed){
+                            team2stats.Posession+=3;
+                            team1stats.Posession-=3;
+                            team2stats.Passes++;
+
+                            q2.InGameStats.Rating+=0.5;
+                            q3.InGameStats.Rating+=0.5;
                             // If new player (q3) has high finishing and high mentality, take a shot
                             // Otherwise attack fails
                             if (q3.Finishing >= 50){
                                 int a = r.Next(0,100);
                                 if (q3.Mentality > a){
                                     // shoot
-                                    bool scored = AttemptShot(team1stats, team2stats, q3, false, false);
+                                    bool scored = AttemptShot(ref game, team1stats, team2stats, q3, false, false);
                                     if (scored) {
                                         team2_score++;
                                         
-                                        //ShowTeam2Scored(team1, team2, team1_score, team2_score);
+                                        // ShowTeam2Scored(ref game, team1, team2, team1_score, team2_score);
+                                        game.AddToLog(new LogItem(ItemType.Text, ("> " + team1.Name + " " + team1_score + " - [")));
+                                        game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+                                        game.AddToLog(new LogItem(ItemType.Text, team2_score.ToString()));
+                                        game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                                        game.AddToLog(new LogItem(ItemType.Text, ("] " + team2.Name + "\n")));
 
                                         goals.Add(new Goal(q3.Name, team2.Name, i));
                                         try{playerStats.Find(pl => pl.Player == q3).GoalsScored++;
@@ -2818,17 +2970,28 @@ namespace Footballv2
                             }
                         }
                         else{
+                            team1stats.Posession+=3;
+                            team2stats.Posession-=3;
+                            team1stats.Interceptions++;
+
+                            q2.InGameStats.Rating-=0.5;
+                            q1.InGameStats.Rating+=0.5;
                             // If new player (q1) has high finishing and high mentality, take a shot
                             // Otherwise attack fails
                             if (q1.Finishing >= 50){
                                 int a = r.Next(0,100);
                                 if (q1.Mentality > a){
                                     // shoot
-                                    bool scored = AttemptShot(team1stats, team2stats, q1, true, false);
+                                    bool scored = AttemptShot(ref game, team1stats, team2stats, q1, true, false);
                                     if (scored) {
                                         team1_score++;
                                         
-                                        //ShowTeam1Scored(team1, team2, team1_score, team2_score);
+                                        // ShowTeam1Scored(ref game, team1, team2, team1_score, team2_score);
+                                        game.AddToLog(new LogItem(ItemType.Text, ("> " + team1.Name + " [")));
+                                        game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+                                        game.AddToLog(new LogItem(ItemType.Text, team1_score.ToString()));
+                                        game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                                        game.AddToLog(new LogItem(ItemType.Text, ("] - " + team2_score + " " + team2.Name + "\n")));
 
                                         goals.Add(new Goal(q1.Name, team1.Name, i));
                                         try{playerStats.Find(pl => pl.Player == q1).GoalsScored++;}catch{}
@@ -2841,19 +3004,29 @@ namespace Footballv2
                     else if (choice == 1){
                         // dribble then chance to shoot
                         //Console.WriteLine("> [" + team2.Name + "] " + q2.Name + " attempts to dribble.");
-                        bool dribbled = AttemptDribble(q2, q1, false);
+                        bool dribbled = AttemptDribble(ref game, q2, q1, false);
                         if (dribbled){
+                            team2stats.Posession+=3;
+                            team1stats.Posession-=3;
+
+                            q2.InGameStats.Rating+=0.5;
+                            q1.InGameStats.Rating-=0.1;
                             // If player (q2) has high finishing and high mentality, take a shot
                             // Otherwise attack fails
                             if (p2.Finishing >= 50){
                                 int a = r.Next(0,100);
                                 if (p2.Mentality > a){
                                     // shoot
-                                    bool scored = AttemptShot(team1stats, team2stats, q2, false, false);
+                                    bool scored = AttemptShot(ref game, team1stats, team2stats, q2, false, false);
                                     if (scored) {
                                         team2_score++;
                                         
-                                        //ShowTeam2Scored(team1, team2, team1_score, team2_score);
+                                        // ShowTeam2Scored(ref game, team1, team2, team1_score, team2_score);
+                                        game.AddToLog(new LogItem(ItemType.Text, ("> " + team1.Name + " " + team1_score + " - [")));
+                                        game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+                                        game.AddToLog(new LogItem(ItemType.Text, team2_score.ToString()));
+                                        game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                                        game.AddToLog(new LogItem(ItemType.Text, ("] " + team2.Name + "\n")));
 
                                         goals.Add(new Goal(q2.Name, team2.Name, i));
                                         try{playerStats.Find(pl => pl.Player == q2).GoalsScored++;}catch{}
@@ -2862,45 +3035,140 @@ namespace Footballv2
                             }
                         }
                         else{
-                            // If new player (q1) has high finishing and high mentality, take a shot
-                            // Otherwise attack fails
-                            if (q1.Finishing >= 50){
-                                int a = r.Next(0,100);
-                                if (q1.Mentality > a){
-                                    // shoot
-                                    bool scored = AttemptShot(team1stats, team2stats, q1, true, false);
-                                    if (scored) {
-                                        team1_score++;
-                                        
-                                        //ShowTeam1Scored(team1, team2, team1_score, team2_score);
+                            team1stats.Tackles++;
+                            int b = r.Next(0,50);
+                            if (q1.Mentality < b){
+                                q1.InGameStats.Rating-=0.3;
+                                team1stats.Fouls++;
+                                ///*if (show) */Console.WriteLine(q1.Name + " fouled " + q2.Name + ".");
+                                game.AddToLog(new LogItem(ItemType.TextLine,(q1.Name + " fouled " + q2.Name + ".")));
 
-                                        goals.Add(new Goal(q1.Name, team1.Name, i));
-                                        try{playerStats.Find(pl => pl.Player == q1).GoalsScored++;}catch{}
+                                int yellowNum = GenerateNormal(30,10);
+                                double yellowThreshold = Sigmoid(yellowNum, q1.Mentality,-0.05,0);
+                                int redNum = GenerateNormal(5,2);
+                                double redThreshold = Sigmoid(redNum, q1.Mentality,-0.063,0.5);
+                                while (redThreshold > yellowThreshold) {redNum = GenerateNormal(5,2); redThreshold = Sigmoid(redNum, q1.Mentality,-0.063,0.5);}
+                                double randnum = r.NextDouble();
+                                //Console.WriteLine("DEBUG 2: ");
+                                //Console.WriteLine("yellowThreshold = " + yellowNum + ", redThreshold = " + redNum + ", mentality = " + q1.Mentality);
+                                //Console.WriteLine("yellowChance = " + yellowThreshold + ", redChance = " + redThreshold + ", randnum = " + randnum);
+                                if (randnum < redThreshold){
+                                    //Console.WriteLine("should send off...");
+                                    q1.InGameStats.GiveCard(ref game, false);
+                                    q1.InGameStats.Rating-=2;
+                                    team1stats.RedCards++;
+                                }
+                                else if (randnum < yellowThreshold){
+                                    //Console.WriteLine("should book...");
+                                    q1.InGameStats.GiveCard(ref game);
+                                    q1.InGameStats.Rating-=0.5;
+                                    team1stats.YellowCards++;
+                                }
+                                //else Console.WriteLine("should do nothing...");
+
+                                bool scored;
+                                if (q2.Position == Position.ST || q2.Position == Position.AM){
+                                    scored = AttemptSetpiece(ref game, team1stats, team2stats, false, isTeam1);
+                                }
+                                else if (q2.Position == Position.LW || q2.Position == Position.RW || q2.Position == Position.LM || q2.Position == Position.RM || q2.Position == Position.CM){
+                                    int c = r.Next(0,100);
+                                    if (q2.Mentality > c) {
+                                        scored = AttemptSetpiece(ref game, team1stats, team2stats, false, isTeam1);
+                                    }
+                                    else{
+                                        scored = AttemptSetpiece(ref game, team1stats, team2stats, true, isTeam1);
+                                    }
+                                }
+                                else{
+                                    scored = AttemptSetpiece(ref game, team1stats, team2stats, true, isTeam1);
+                                }
+                                if (scored) {
+                                    team2_score++;
+                                    // ShowTeam2Scored(ref game, team1, team2, team1_score, team2_score);
+                                    game.AddToLog(new LogItem(ItemType.Text, ("> " + team1.Name + " " + team1_score + " - [")));
+                                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+                                    game.AddToLog(new LogItem(ItemType.Text, team2_score.ToString()));
+                                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                                    game.AddToLog(new LogItem(ItemType.Text, ("] " + team2.Name + "\n")));
+                                    goals.Add(new Goal (getSetPieceTaker(team2).Name, team2.Name,i));
+                                }
+                            }
+                            else{
+                                team1stats.Posession+=3;
+                                team2stats.Posession-=3;
+
+                                q1.InGameStats.Rating+=0.5;
+                                q2.InGameStats.Rating-=0.5;
+                                ///*if (show) */Console.WriteLine(q1.Name + " tackles " + q2.Name + ".");
+                                game.AddToLog(new LogItem(ItemType.TextLine, (q1.Name + " tackles " + q2.Name + ".")));
+                                // If new player (q1) has high finishing and high mentality, take a shot
+                                // Otherwise attack fails
+                                if (q1.Finishing >= 50){
+                                    int a = r.Next(0,100);
+                                    if (q1.Mentality > a){
+                                        // shoot
+                                        bool scored = AttemptShot(ref game, team1stats, team2stats, q1, true);
+                                        if (scored) {
+                                            team1_score++;
+                                            
+                                            // ShowTeam1Scored(ref game, team1, team2, team1_score, team2_score);
+                                            game.AddToLog(new LogItem(ItemType.Text, ("> " + team1.Name + " [")));
+                                            game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+                                            game.AddToLog(new LogItem(ItemType.Text, team1_score.ToString()));
+                                            game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                                            game.AddToLog(new LogItem(ItemType.Text, ("] - " + team2_score + " " + team2.Name + "\n")));
+
+                                            goals.Add(new Goal(q1.Name, team1.Name, i));
+                                        }
                                     }
                                 }
                             }
+                            
                         }
                     }
                     else{
+                        team2stats.Posession+=2;
+                        team1stats.Posession-=2;
                         // shoot
-                        bool scored = AttemptShot(team1stats, team2stats, q2, false, false);
+                        bool scored = AttemptShot(ref game, team1stats, team2stats, q2, false, false);
                         if (scored) {
                             team2_score++;
                             
-                            //ShowTeam2Scored(team1, team2, team1_score, team2_score);
+                            // ShowTeam2Scored(ref game, team1, team2, team1_score, team2_score);
+                            game.AddToLog(new LogItem(ItemType.Text, ("> " + team1.Name + " " + team1_score + " - [")));
+                            game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+                            game.AddToLog(new LogItem(ItemType.Text, team2_score.ToString()));
+                            game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                            game.AddToLog(new LogItem(ItemType.Text, ("] " + team2.Name + "\n")));
 
                             goals.Add(new Goal(q2.Name, team2.Name, i));
                             try{playerStats.Find(pl => pl.Player == q2).GoalsScored++;}catch{}
                         }
                     }
                 }
+                game.AddToLog(new LogItem(ItemType.TextLine, ""));
+                game.AddToLog(new LogItem(ItemType.Read, ""));
                 isTeam1 = !isTeam1;
             }
+            //Console.ForegroundColor = ConsoleColor.Red;
+            game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Red"));
+            //Console.WriteLine("FULL TIME!");
+            game.AddToLog(new LogItem(ItemType.TextLine, ("FULL TIME!")));
+            //Console.ForegroundColor = ConsoleColor.White;
+            game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+            //Console.WriteLine("Final Score: " + team1.Name + " " + team1_score + " - " + team2_score + " " + team2.Name);
+            game.AddToLog(new LogItem(ItemType.TextLine, ("Final Score: " + team1.Name + " " + team1_score + " - " + team2_score + " " + team2.Name)));
+
+            game.Team1Stats = team1stats;
+            game.Team2Stats = team2stats;
 
             List<int> score = new List<int>();
             score.Add(team1_score);
             score.Add(team2_score);
-            return score;
+
+            game.Score = score;
+
+            return game;
         }
 
         static bool AttemptPass(Player p1, Player p2, Player p3, bool show = true){
@@ -2914,6 +3182,23 @@ namespace Footballv2
             }
             else{
                 if (show) Console.WriteLine("> The pass is intercepted by " + p3.Name +".");
+                return false;
+            }
+        }
+
+        static bool AttemptPass(ref Game game, Player p1, Player p2, Player p3, bool show = true){
+            Random rand = new Random(0);
+
+            double passchance = Sigmoid(Math.Max(p1.Passing, p2.Passing), Math.Max(p3.Tackling,p3.GoalPrevention), -0.03, -0.5); // https://www.desmos.com/calculator/kn9tpwdan5
+            double randnum = rand.NextDouble();
+            if (randnum < passchance){
+                //if (show) Console.WriteLine("> The pass was successful.");
+                game.AddToLog(new LogItem(ItemType.TextLine, ("> The pass was successful.")));
+                return true;
+            }
+            else{
+                //if (show) Console.WriteLine("> The pass is intercepted by " + p3.Name +".");
+                game.AddToLog(new LogItem(ItemType.TextLine, ("> The pass is intercepted by " + p3.Name +".")));
                 return false;
             }
         }
@@ -2936,6 +3221,24 @@ namespace Footballv2
             if (show) Console.Write("> ");
             if (randnum < dribblechance){
                 if (show) Console.WriteLine(p1.Name + " dribbled past " + p2.Name + ".");
+                return true;
+            }
+            else{
+                //if (show) Console.WriteLine(p2.Name + " tackled " + p1.Name + ".");
+                return false;
+            }
+        }
+
+        static bool AttemptDribble(ref Game game, Player p1, Player p2, bool show = true){
+            Random rand = new Random(0);
+
+            double dribblechance = Sigmoid(p1.Dribbling, p2.Tackling, -0.03, -0.5); // https://www.desmos.com/calculator/kn9tpwdan5
+            double randnum = rand.NextDouble();
+            //if (show) Console.Write("> ");
+            game.AddToLog(new LogItem(ItemType.Text, "> "));
+            if (randnum < dribblechance){
+                //if (show) Console.WriteLine(p1.Name + " dribbled past " + p2.Name + ".");
+                game.AddToLog(new LogItem(ItemType.TextLine, (p1.Name + " dribbled past " + p2.Name + ".")));
                 return true;
             }
             else{
@@ -2972,6 +3275,48 @@ namespace Footballv2
             }
 
             bool goal = AttemptShot(team1, team2, bestPlayer, isTeam1, show);
+            
+            return goal;
+        }
+
+        static bool AttemptSetpiece(ref Game game, TeamGameStats team1, TeamGameStats team2, bool isFreeKick, bool isTeam1, bool show = true){
+            Team teamTaking;
+
+            if (isTeam1) teamTaking = team1.Team;
+            else teamTaking = team2.Team;
+
+            Player bestPlayer = getSetPieceTaker(teamTaking);
+
+            // Console.Write("> ");
+            game.AddToLog(new LogItem(ItemType.Text, "> "));
+            if (isFreeKick){
+                // Console.ForegroundColor = ConsoleColor.Magenta;
+                game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Magenta"));
+                // Console.Write("FREE KICK! ");
+                game.AddToLog(new LogItem(ItemType.Text, "FREE KICK! "));
+                // Console.ForegroundColor = ConsoleColor.White;
+                game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                // Console.Write(teamTaking.Name + " are awarded a free kick.");
+                game.AddToLog(new LogItem(ItemType.Text, (teamTaking.Name + " are awarded a free kick.")));
+                // Console.Write("\n> [" + teamTaking.Name + "] " + bestPlayer.Name + " steps up to take the free kick...\n");
+                game.AddToLog(new LogItem(ItemType.Text, ("\n> [" + teamTaking.Name + "] " + bestPlayer.Name + " steps up to take the free kick...\n")));
+                //bestPlayer.Finishing -= 5;
+            }
+            else{
+                // Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.DarkMagenta"));
+                // Console.Write("PENALTY! ");
+                game.AddToLog(new LogItem(ItemType.Text, "PENALTY! "));
+                // Console.ForegroundColor = ConsoleColor.White;
+                game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                // Console.Write(teamTaking.Name + " are awarded a penalty.");
+                game.AddToLog(new LogItem(ItemType.Text, (teamTaking.Name + " are awarded a penalty.")));
+                // Console.Write("\n> [" + teamTaking.Name + "] " + bestPlayer.Name + " steps up to take the penalty...\n");
+                game.AddToLog(new LogItem(ItemType.Text, ("\n> [" + teamTaking.Name + "] " + bestPlayer.Name + " steps up to take the penalty...\n")));
+                // bestPlayer.Finishing += 10;               
+            }
+
+            bool goal = AttemptShot(ref game, team1, team2, bestPlayer, isTeam1, show);
             
             return goal;
         }
@@ -3060,6 +3405,103 @@ namespace Footballv2
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.WriteLine(gk1.Name + " saves the shot for " + team1stats.Team.Name + "!");
                     }
+                    return false;
+                }  
+            }        
+        }
+
+        static bool AttemptShot(ref Game game, TeamGameStats team1stats, TeamGameStats team2stats, Player p1, bool isTeam1, bool show = true){ // Simulate a shot
+            Player gk1 = team1stats.Team.Players[0]; // Team 1s goalkeeper
+            Player gk2 = team2stats.Team.Players[0]; // Team 2s goalkeeper
+
+            //Player p1 = p1_.Player;
+
+            if (isTeam1) team1stats.Shots++;
+            else team2stats.Shots++;
+
+            Random rand = new Random();
+            if (isTeam1) game.AddToLog(new LogItem(ItemType.TextLine, ("> [" + team1stats.Team.Name + "] " + p1.Name + " attempts a shot.")));
+            else game.AddToLog(new LogItem(ItemType.TextLine, ("> [" + team2stats.Team.Name + "] " + p1.Name + " attempts a shot.")));
+
+            game.AddToLog(new LogItem(ItemType.Text, "> "));
+
+            double hitchance = GenerateNormal(40,25);
+            if (p1.Finishing < hitchance){
+                p1.InGameStats.Rating-=0.5; // Lower rating for missed shot
+                //Console.ForegroundColor = ConsoleColor.Red;
+                game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Red"));
+                //Console.Write("MISS. ");
+                game.AddToLog(new LogItem(ItemType.Text, "MISS. "));
+                //Console.ForegroundColor = ConsoleColor.White;
+                game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                //Console.WriteLine(p1.Name + " missed the target.");
+                game.AddToLog(new LogItem(ItemType.TextLine, (p1.Name + " missed the target.")));
+                return false;
+            }
+
+            if (isTeam1){
+                team1stats.ShotsOnTarget++;
+                double shotchance = Sigmoid(p1.Finishing, gk2.Tackling);
+                double randnum = rand.NextDouble();
+                if (randnum < shotchance){
+                    p1.InGameStats.Rating+=1; // Increase rating for goal
+                    gk2.InGameStats.Rating-=0.3; // Decrease keeper rating for a failed save
+                    team1stats.Goals++;
+                    // Console.ForegroundColor = ConsoleColor.Green;
+                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+                    // Console.Write("GOAL! ");
+                    game.AddToLog(new LogItem(ItemType.Text, "GOAL! "));
+                    // Console.ForegroundColor = ConsoleColor.White;
+                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                    // Console.WriteLine(p1.Name + " scores for " + team1stats.Team.Name + "!");
+                    game.AddToLog(new LogItem(ItemType.TextLine, (p1.Name + " scores for " + team1stats.Team.Name + "!")));
+                    return true;
+                }
+                else{
+                    p1.InGameStats.Rating+=0.3; // Slightly increase rating for on target shot
+                    gk2.InGameStats.Rating+=0.5; // Increase keeper rating for a save
+                    team2stats.Saves++;
+                    // Console.ForegroundColor = ConsoleColor.Yellow;
+                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Yellow"));
+                    // Console.Write("SAVE! ");
+                    game.AddToLog(new LogItem(ItemType.Text, "SAVE! "));
+                    // Console.ForegroundColor = ConsoleColor.White;
+                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                    // Console.WriteLine(gk2.Name + " saves the shot for " + team2stats.Team.Name + "!");
+                    game.AddToLog(new LogItem(ItemType.TextLine, (gk2.Name + " saves the shot for " + team2stats.Team.Name + "!")));
+                    return false;
+                }  
+            }
+            else{
+                team2stats.ShotsOnTarget++;
+                double shotchance = Sigmoid(p1.Finishing, gk1.Tackling);
+                double randnum = rand.NextDouble();
+                if (randnum < shotchance){
+                    p1.InGameStats.Rating+=1; // Increase rating for goal
+                    gk1.InGameStats.Rating-=0.3; // Decrease keeper rating for a failed save
+                    team2stats.Goals++;
+                    // Console.ForegroundColor = ConsoleColor.Green;
+                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Green"));
+                    // Console.Write("GOAL! ");
+                    game.AddToLog(new LogItem(ItemType.Text, "GOAL! "));
+                    // Console.ForegroundColor = ConsoleColor.White;
+                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                    // Console.WriteLine(p1.Name + " scores for " + team2stats.Team.Name + "!");
+                    game.AddToLog(new LogItem(ItemType.TextLine, (p1.Name + " scores for " + team2stats.Team.Name + "!")));
+                    return true;
+                }
+                else{
+                    p1.InGameStats.Rating+=0.3; // Slightly increase rating for on target shot
+                    gk1.InGameStats.Rating+=0.5; // Increase keeper rating for a save
+                    team1stats.Saves++;
+                    // Console.ForegroundColor = ConsoleColor.Yellow;
+                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.Yellow"));
+                    // Console.Write("SAVE! ");
+                    game.AddToLog(new LogItem(ItemType.Text, "SAVE! "));
+                    // Console.ForegroundColor = ConsoleColor.White;
+                    game.AddToLog(new LogItem(ItemType.Colour, "ConsoleColor.White"));
+                    // Console.WriteLine(gk2.Name + " saves the shot for " + team2stats.Team.Name + "!");
+                    game.AddToLog(new LogItem(ItemType.TextLine, (gk2.Name + " saves the shot for " + team1stats.Team.Name + "!")));
                     return false;
                 }  
             }        
