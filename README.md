@@ -194,3 +194,10 @@ and these attributes dictate how a player performs. [...]
   - This will require re-printing the match list after recreating a game, so need to make sure this is done separately from the totalling of wins etc.
 - More use of clearing the console when necessary with `Console.Clear()`
 - Use player ratings to show team of the season / best rated player, which should be relatively easy once the storing of such ratings is done
+
+## Changelog v. a.2.2021.12.23.0
+- Added extra stats to view once a replayed game in a season is viewed
+  - These include the options available when simulating a single game, such as viewing ratings etc.
+- Added display of Team of the Season once a season is complete
+  - The top rated players in a 4-3-3 formation are printed, as well as the overall highest rated player
+  - This could be improved by fiddling with the position requirements, as sometimes a player like Salah will end up shown as a midfielder 
