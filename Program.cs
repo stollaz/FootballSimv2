@@ -1064,14 +1064,18 @@ namespace Footballv2
 
         private List<float> ratings; // Stores every rating from every game they have played
 
-        private int avgRating;
-        public int AvgRating{
+        private float avgRating;
+        public float AvgRating{
             get { return avgRating; }
             set { avgRating = value; }
         }
 
         public void AddRating(float r){
             ratings.Add(r);
+        }
+
+        public void CalculateAvgRating(){
+            avgRating = ratings.Sum()/gamesPlayed;
         }
 
         private int goalsScored;
@@ -2006,12 +2010,83 @@ namespace Footballv2
                 Console.Write("\n");
             }
 
+            Console.WriteLine("PRESS ENTER TO VIEW INDIVIDUAL AWARDS...");
+            Console.ReadLine();
+
             List<PlayerSeasonStats> orderedStatsByGoals = playerStats.OrderByDescending(p=>p.GoalsScored).ToList();
             PlayerSeasonStats topScorer = orderedStatsByGoals[0];
             List<PlayerSeasonStats> orderedStatsByAssists = playerStats.OrderByDescending(p=>p.Assists).ToList(); // This seems redundant since assists aren't done properly enough to really mean anything (some seasons, the top assister has 3)
             PlayerSeasonStats topAssister = orderedStatsByAssists[0];
             Console.WriteLine("\nTOP SCORER: {0} ({1}): {2} goals",topScorer.Player.Name, topScorer.Team.Name, topScorer.GoalsScored);
             Console.WriteLine("TOP ASSISTER: {0} ({1}): {2} assists",topAssister.Player.Name, topAssister.Team.Name, topAssister.Assists);
+
+            foreach (var p in playerStats) p.CalculateAvgRating();
+            List<PlayerSeasonStats> orderedStatsByRating = playerStats.OrderByDescending(p=>p.AvgRating).ToList();
+            PlayerSeasonStats topRating = orderedStatsByRating[0];
+            Console.Write("\nTOP RATED: {0} ({1}): ",topRating.Player.Name, topRating.Team.Name); PrintRatingWithColour(Math.Round(topRating.AvgRating,2));
+
+            int PADDING = 55;
+
+            Console.WriteLine("TEAM OF THE SEASON");
+            List<PlayerSeasonStats> TOTS = new List<PlayerSeasonStats>();
+            Console.WriteLine("[7]----[9]----[11]\n------------------\n------------------\n--[6]--[10]--[8]--\n------------------\n------------------\n[2]--[4]--[5]--[3]\n-------[1]-------");
+            PlayerSeasonStats bestGK = orderedStatsByRating.Find(p => p.Player.Position == Position.GK);
+            TOTS.Add(bestGK);
+            Console.Write(String.Format("\n[1] [GK] : {0} ({1}): ",bestGK.Player.Name, bestGK.Team.Name).PadRight(PADDING,' ')); PrintRatingWithColour(Math.Round(bestGK.AvgRating,2), false);
+
+            PlayerSeasonStats bestLB = orderedStatsByRating.Find(p => (p.Player.Position == Position.LB || p.Player.Position2 == Position.LB) && !TOTS.Contains(p));
+            TOTS.Add(bestLB);
+            Console.Write(String.Format("\n[2] [{2}] : {0} ({1}): ",bestLB.Player.Name, bestLB.Team.Name, bestLB.Player.Position).PadRight(PADDING,' ')); PrintRatingWithColour(Math.Round(bestLB.AvgRating,2), false);
+
+            PlayerSeasonStats bestRB = orderedStatsByRating.Find(p => (p.Player.Position == Position.RB || p.Player.Position2 == Position.RB) && !TOTS.Contains(p));
+            TOTS.Add(bestRB);
+            Console.Write(String.Format("\n[3] [{2}] : {0} ({1}): ",bestRB.Player.Name, bestRB.Team.Name, bestRB.Player.Position).PadRight(PADDING,' ')); PrintRatingWithColour(Math.Round(bestRB.AvgRating,2), false);
+
+            PlayerSeasonStats bestCB1 = orderedStatsByRating.Find(p => (p.Player.Position == Position.CB || p.Player.Position2 == Position.CB || p.Player.Position == Position.DF || p.Player.Position2 == Position.CB) && !TOTS.Contains(p));
+            TOTS.Add(bestCB1);
+            Console.Write(String.Format("\n[4] [{2}] : {0} ({1}): ",bestCB1.Player.Name, bestCB1.Team.Name, bestCB1.Player.Position).PadRight(PADDING,' ')); PrintRatingWithColour(Math.Round(bestCB1.AvgRating,2), false);
+
+            PlayerSeasonStats bestCB2 = orderedStatsByRating.Find(p => p != bestCB1 && (p.Player.Position == Position.CB || p.Player.Position2 == Position.CB || p.Player.Position == Position.DF || p.Player.Position2 == Position.CB) && !TOTS.Contains(p));
+            TOTS.Add(bestCB2);
+            Console.Write(String.Format("\n[5] [{2}] : {0} ({1}): ",bestCB2.Player.Name, bestCB2.Team.Name, bestCB2.Player.Position).PadRight(PADDING,' ')); PrintRatingWithColour(Math.Round(bestCB2.AvgRating,2), false);
+
+            PlayerSeasonStats bestMF1 = orderedStatsByRating.Find(p => (p.Player.Position == Position.MF || p.Player.Position2 == Position.MF || p.Player.Position == Position.DM || p.Player.Position2 == Position.DM
+                || p.Player.Position == Position.AM || p.Player.Position2 == Position.AM
+                || p.Player.Position == Position.CM || p.Player.Position2 == Position.CM) && !TOTS.Contains(p));
+            TOTS.Add(bestMF1);
+            Console.Write(String.Format("\n[6] [{2}] : {0} ({1}): ",bestMF1.Player.Name, bestMF1.Team.Name, bestMF1.Player.Position).PadRight(PADDING,' ')); PrintRatingWithColour(Math.Round(bestMF1.AvgRating,2), false);
+
+            PlayerSeasonStats bestMF2 = orderedStatsByRating.Find(p => (p.Player.Position == Position.MF || p.Player.Position2 == Position.MF || p.Player.Position == Position.DM || p.Player.Position2 == Position.DM
+                || p.Player.Position == Position.AM || p.Player.Position2 == Position.AM
+                || p.Player.Position == Position.CM || p.Player.Position2 == Position.CM) && !TOTS.Contains(p));
+            TOTS.Add(bestMF2);
+            Console.Write(String.Format("\n[10][{2}] : {0} ({1}): ",bestMF2.Player.Name, bestMF2.Team.Name, bestMF2.Player.Position).PadRight(PADDING,' ')); PrintRatingWithColour(Math.Round(bestMF2.AvgRating,2), false);
+
+            PlayerSeasonStats bestMF3 = orderedStatsByRating.Find(p => (p.Player.Position == Position.MF || p.Player.Position2 == Position.MF || p.Player.Position == Position.DM || p.Player.Position2 == Position.DM
+                || p.Player.Position == Position.AM || p.Player.Position2 == Position.AM
+                || p.Player.Position == Position.CM || p.Player.Position2 == Position.CM) && !TOTS.Contains(p));
+            TOTS.Add(bestMF3);
+            Console.Write(String.Format("\n[8] [{2}] : {0} ({1}): ",bestMF3.Player.Name, bestMF3.Team.Name, bestMF3.Player.Position).PadRight(PADDING,' ')); PrintRatingWithColour(Math.Round(bestMF3.AvgRating,2), false);
+
+            PlayerSeasonStats bestST = orderedStatsByRating.Find(p => (p.Player.Position == Position.ST || p.Player.Position2 == Position.ST || p.Player.Position == Position.FW || p.Player.Position2 == Position.FW) && !TOTS.Contains(p));
+            TOTS.Add(bestST);
+
+            PlayerSeasonStats bestLW = orderedStatsByRating.Find(p => (p.Player.Position == Position.LW || p.Player.Position2 == Position.LW || p.Player.Position == Position.LM || p.Player.Position2 == Position.LM
+            || p.Player.Position == Position.FW || p.Player.Position2 == Position.FW) && !TOTS.Contains(p));
+            TOTS.Add(bestLW);
+            Console.Write(String.Format("\n[7] [{2}] : {0} ({1}): ",bestLW.Player.Name, bestLW.Team.Name, bestLW.Player.Position).PadRight(PADDING,' ')); PrintRatingWithColour(Math.Round(bestLW.AvgRating,2), false);
+
+            Console.Write(String.Format("\n[9] [{2}] : {0} ({1}): ",bestST.Player.Name, bestST.Team.Name, bestST.Player.Position).PadRight(PADDING,' ')); PrintRatingWithColour(Math.Round(bestST.AvgRating,2), false);
+
+            PlayerSeasonStats bestRW = orderedStatsByRating.Find(p => (p.Player.Position == Position.RW || p.Player.Position2 == Position.RW || p.Player.Position == Position.RM || p.Player.Position2 == Position.RM
+            || p.Player.Position == Position.FW || p.Player.Position2 == Position.FW) && !TOTS.Contains(p));
+            TOTS.Add(bestRW);
+            Console.Write(String.Format("\n[11][{2}] : {0} ({1}): ",bestRW.Player.Name, bestRW.Team.Name, bestRW.Player.Position).PadRight(PADDING,' ')); PrintRatingWithColour(Math.Round(bestRW.AvgRating,2), false);
+        }
+
+        // TODO: Function to avoid repetition of the above
+        static PlayerSeasonStats getTOTS(Position p){
+           return null;
         }
 
         static int StartMenu(){
@@ -3218,6 +3293,10 @@ namespace Footballv2
             //Console.WriteLine("Final Score: " + team1.Name + " " + team1_score + " - " + team2_score + " " + team2.Name);
             game.AddToLog(new LogItem(ItemType.TextLine, ("Final Score: " + team1.Name + " " + team1_score + " - " + team2_score + " " + team2.Name)));
 
+            //try{playerStats.Find(pl => pl.Player == p3).GoalsScored++;
+            foreach (Player p in team1.Players) playerStats.Find(pl => pl.Player == p).AddRating((float)p.InGameStats.Rating);
+            foreach (Player p in team2.Players) playerStats.Find(pl => pl.Player == p).AddRating((float)p.InGameStats.Rating);
+            
             game.Team1Stats = team1stats;
             game.Team2Stats = team2stats;
             game.Goals = goals;
@@ -4015,7 +4094,7 @@ namespace Footballv2
             }
         }
 
-        static void PrintRatingWithColour(double rating){
+        static void PrintRatingWithColour(double rating, bool newline = true){
             if (rating <= 5) Console.ForegroundColor = ConsoleColor.DarkRed;
             else if (rating < 6) Console.ForegroundColor = ConsoleColor.Red;
             else if (rating < 7) Console.ForegroundColor = ConsoleColor.Yellow;
@@ -4023,7 +4102,8 @@ namespace Footballv2
             else if (rating < 9) Console.ForegroundColor = ConsoleColor.DarkGreen;
             else Console.ForegroundColor = ConsoleColor.Cyan;
 
-            Console.Write(rating.ToString("0.0") + "\n");
+            Console.Write(rating.ToString("0.0"));
+            if (newline) Console.Write("\n");
 
             Console.ForegroundColor = ConsoleColor.White;
         }
