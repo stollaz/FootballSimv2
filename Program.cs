@@ -1178,6 +1178,18 @@ namespace Footballv2
             set { id = value; }
         }
 
+        public Team team1;
+        private Team Team1{
+            get { return team1; }
+            set { team1 = value; }
+        }
+
+        public Team team2;
+        private Team Team2{
+            get { return team2; }
+            set { team2 = value; }
+        }
+
         // Store stats for team 1
         private TeamGameStats team1Stats;
         public TeamGameStats Team1Stats{
@@ -1192,6 +1204,18 @@ namespace Footballv2
             set { team2Stats = value; }
         }
 
+        public List<PlayerInGame> team1Players;
+        private List<PlayerInGame> Team1Players{
+            get { return team1Players; }
+            set { team1Players = value; }
+        }
+
+        public List<PlayerInGame> team2Players;
+        private List<PlayerInGame> Team2Players{
+            get { return team2Players; }
+            set { team2Players = value; }
+        }
+
         private List<int> score;
         public List<int> Score{
             get { return score; }
@@ -1203,6 +1227,12 @@ namespace Footballv2
         public List<LogItem> EventLog{
             get { return eventLog; }
             set { eventLog = value; }
+        }
+
+        private List<Goal> goals;
+        public List<Goal> Goals{
+            get { return goals; }
+            set { goals = value; }
         }
 
         // Add string to event log
@@ -1220,6 +1250,9 @@ namespace Footballv2
         public Game(string _id){ 
             id = _id; 
             eventLog = new List<LogItem>();
+            goals = new List<Goal>();
+            team1Players = new List<PlayerInGame>();
+            team2Players = new List<PlayerInGame>();
         }
     }
 
@@ -1345,6 +1378,7 @@ namespace Footballv2
 
         static void Main(string[] args)
         {            
+            Console.Clear();
             while (true){
                 int option = StartMenu();
                 switch(option){
@@ -1563,21 +1597,8 @@ namespace Footballv2
                 //Console.Write(t.Team.Rating.ToString().PadRight(5,' ')); // Rating
                 Console.Write("\n");
             }
-
-            /*for (int z = 0; z < 20; z++){
-                if (SortedList[z].Team.Name.Contains("Manchester") || SortedList[z].Team.Name.Contains("Bristol") || SortedList[z].Team.Name.Contains("Basingstoke")){
-                    Console.WriteLine("\nFOUND ONE OF THEM TEAMS");
-                    Console.WriteLine("FOUND ONE OF THEM TEAMS");
-                    Console.WriteLine("FOUND ONE OF THEM TEAMS");
-                    Console.WriteLine("FOUND ONE OF THEM TEAMS");
-                }
-            }*/
         }
 
-        // TODO
-        // NOTE: A plugin called IronPython seems to be able to execute python scripts from c# - this could be very useful as it means I
-        //       wouldnt have to emulate the python script in here, which already looks to be a massive pain
-        //          https://ironpython.net/
         static void csv_to_stats(bool step_by_step = false){
             //PrintOne();
             //PrintAllInLeague();
@@ -1585,13 +1606,6 @@ namespace Footballv2
             SimulateRealSeason(Teams, step_by_step);
         }
 
-        // TODO:
-        //      - Feed this into a SimulateRealSeason() somehow
-        //      - Have a function in RotatableTeam to select a Best XI
-        //          - After a while once this works this can be changed to actually rotate players, so picks an XI
-        //              including some randomness
-        //      - Change how player Overall is calculated to be weighted towards their particular stats
-        //      - Change formations to be 4-3-3 instead of 4-2-3-1 so they can be more generic with DF-MF-FW (MAYBE)
         public static List<RotatableTeam> GenerateLeague() {
             string[] regions = {"ENG","ESP","FRA","ITA","GER"};
             Console.Write("Enter region code for league (ENG, ESP, FRA, ITA, GER) > ");
@@ -1737,29 +1751,106 @@ namespace Footballv2
         }
 
         static void RecreateGameFromLog(Game game){
-            PrintStats(game.Team1Stats, game.Team2Stats);
-            Console.WriteLine("\nWould you like to step through this game action by action? (Y/N)");
-            Console.Write("> ");
-            string s = Console.ReadLine();
-            if (s.ToLower() == "y" || s.ToLower() == "yes"){
-                Console.Clear();
-                foreach (var item in game.EventLog){
-                    switch(item.ItemType){
-                        case ItemType.Read:
-                            Console.Read();
+            Console.Clear();
+            Console.WriteLine("Options: ");
+
+            int option = 0;
+
+            bool simulated = false;
+
+            while (option != 9 && option != 3){
+                option = EndGameMenuInSeason(true);
+
+                switch(option){
+                    case 0:
+                        Console.Clear();
+                        Console.WriteLine("\nGoalscorers:");
+                        foreach (var g in game.Goals) g.GoalInfo();
+                        Console.WriteLine();
+                        Console.WriteLine("==========");
+                        Console.WriteLine();
+                        break;
+                    case 1:
+                        Console.Clear();
+                        Console.WriteLine();
+                        PrintStats(game.Team1Stats, game.Team2Stats);
+                        Console.WriteLine();
+                        Console.WriteLine("==========");
+                        Console.WriteLine();
+                        break;
+                    case 2:
+                        Console.Clear();
+                        Console.WriteLine();
+                        PrintRatings(game.team1Players, game.team2Players, game.team1, game.team2);
+                        Console.WriteLine();
+                        Console.WriteLine("==========");
+                        Console.WriteLine();
+                        break;
+                    case 3:
+                        simulated = true;
+                        Console.Clear();
+                        foreach (var item in game.EventLog){
+                            switch(item.ItemType){
+                                case ItemType.Read:
+                                    Console.Read();
+                                    break;
+                                case ItemType.Colour:
+                                    string c = item.ItemValue.Split('.')[1];
+                                    Console.ForegroundColor = (ConsoleColor) Enum.Parse(typeof(ConsoleColor), c);
+                                    break;
+                                case ItemType.Text:
+                                    Console.Write(item.ItemValue);
+                                    break;
+                                case ItemType.TextLine:
+                                    Console.WriteLine(item.ItemValue);
+                                    break;
+                                default:
+                                    throw new ArgumentException("Invalid item type.");
+                            }
+                        }
+                        break;
+                    case 9:
+                        break;
+                    default:
+                        break;
+                }
+            }
+            Console.Clear();
+
+            Console.WriteLine("\nWould you like to see stats again? ");
+
+            option = 0;
+
+            if (simulated){
+                while (option != 9 && option != 3){
+                    option = EndGameMenuInSeason(false);
+
+                    switch(option){
+                        case 0:
+                            Console.WriteLine("\nGoalscorers:");
+                            foreach (var g in game.Goals) g.GoalInfo();
+                            Console.WriteLine();
+                            Console.WriteLine("==========");
+                            Console.WriteLine();
                             break;
-                        case ItemType.Colour:
-                            string c = item.ItemValue.Split('.')[1];
-                            Console.ForegroundColor = (ConsoleColor) Enum.Parse(typeof(ConsoleColor), c);
+                        case 1:
+                            Console.WriteLine();
+                            PrintStats(game.Team1Stats, game.Team2Stats);
+                            Console.WriteLine();
+                            Console.WriteLine("==========");
+                            Console.WriteLine();
                             break;
-                        case ItemType.Text:
-                            Console.Write(item.ItemValue);
+                        case 2:
+                            Console.WriteLine();
+                            PrintRatings(game.team1Players, game.team2Players, game.team1, game.team2);
+                            Console.WriteLine();
+                            Console.WriteLine("==========");
+                            Console.WriteLine();
                             break;
-                        case ItemType.TextLine:
-                            Console.WriteLine(item.ItemValue);
+                        case 9:
                             break;
                         default:
-                            throw new ArgumentException("Invalid item type.");
+                            break;
                     }
                 }
             }
@@ -1768,22 +1859,6 @@ namespace Footballv2
 
         static void SimulateRealSeason(List<RotatableTeam> teams, bool step_by_step = false){
             List<TeamSeasonStats> season = new List<TeamSeasonStats>();
-
-            // TODO:
-            /*
-            This below should be the main piece of code to:
-                - Web scrape data from a league (start with Premier League but should be easily expandable to others on request)
-                - Generate all the csv files, or alternatively simply check that they already exist
-                - Emulate the existing csv_to_stats.py program to generate simulation stats for each player
-                - Generate a starting 11 for each team
-                    - Alternatively to be more ambitious, any valid player can be assigned to the team, and a pseudo-random starting XI for
-                      each game could be generated using the available players, though ideally this would be weighted based on some overall
-                - Do normal simulation
-            */
-
-            // TODO V1:
-            // Go through each team in the list provided, find out what the best players from each team are,  and create a regular Team object 
-            //  from that for the simulator to work with
 
             List<PlayerSeasonStats> playerStats = new List<PlayerSeasonStats>();
 
@@ -1823,18 +1898,12 @@ namespace Footballv2
                 gw.WeekNum = weeknum; // Update the week number to be correct
                 weeknum++;
             }
-            
-            // Print each game week
-            /*foreach (var gameweek in gameweeks) {
-                Console.WriteLine("Game Week {0}:",gameweek.WeekNum);
-                foreach (var game in gameweek.Games) Console.WriteLine("{0} vs {1}",game.Item1.Name, game.Item2.Name);
-                Console.WriteLine();
-            }*/
 
-            //Console.ReadLine();
+            List<List<Game>> allGameWeeks = new List<List<Game>>();
 
             foreach (var week in gameweeks){
-                if (step_by_step) Console.WriteLine("Game Week {0}:",week.WeekNum);
+                Console.Clear();
+                //if (step_by_step) Console.WriteLine("Game Week {0}:",week.WeekNum);
                 int i = 0;
                 List<Game> gamesInWeek = new List<Game>();
                 foreach (var game in week.Games){
@@ -1857,58 +1926,56 @@ namespace Footballv2
                     t1.GoalsAgainst += goals[1];
                     t2.GoalsAgainst += goals[0];
 
-                    if (step_by_step){
-                        ConsoleColor currentForeground = Console.ForegroundColor;
-                        Console.Write("Game {0}:        ",i);
-                        if (goals[0] > goals[1]) Console.ForegroundColor = ConsoleColor.Green;
-                        Console.Write(t1.Team.Name.PadRight(17,' ')); // Name
-                        Console.ForegroundColor = currentForeground;
-                        Console.Write(goals[0].ToString().PadRight(2,' '));
-                        Console.Write(" - ");
-                        Console.Write(goals[1].ToString().PadLeft(2,' '));
-                        Console.Write("  ");
-                        if (goals[0] < goals[1]) Console.ForegroundColor = ConsoleColor.Green;
-                        Console.Write(t2.Team.Name.PadRight(17,' ')); // Name
-                        Console.ForegroundColor = currentForeground;
-                        Console.Write("\n");
-                    }
                     i++;
                 }
+                allGameWeeks.Add(gamesInWeek);
+
                 if (step_by_step){
-                    Console.WriteLine("\nEnter a game number to get stats on that game.");
-                    Console.WriteLine("Otherwise, press Enter to continue...");
-                    Console.Write("> ");
                     int num = -1;
-                    try { num = int.Parse(Console.ReadLine()); } catch {}
-                    if (num > -1 && num <= 9){
-                        Console.Clear();
-                        RecreateGameFromLog(gamesInWeek.ElementAt(num));
+                    while (num != -2){
+                        i = 0;
+                        Console.WriteLine("Game Week {0}:",week.WeekNum);
+                        foreach (Game g in gamesInWeek){
+                            List<int> goals = g.Score;
+                            ConsoleColor currentForeground = Console.ForegroundColor;
+                            Console.Write("Game {0}:        ",i);
+                            if (goals[0] > goals[1]) Console.ForegroundColor = ConsoleColor.Green;
+                            Console.Write(g.team1.Name.PadRight(17,' ')); // Name
+                            Console.ForegroundColor = currentForeground;
+                            Console.Write(goals[0].ToString().PadRight(2,' '));
+                            Console.Write(" - ");
+                            Console.Write(goals[1].ToString().PadLeft(2,' '));
+                            Console.Write("  ");
+                            if (goals[0] < goals[1]) Console.ForegroundColor = ConsoleColor.Green;
+                            Console.Write(g.team2.Name.PadRight(17,' ')); // Name
+                            Console.ForegroundColor = currentForeground;
+                            Console.Write("\n");
+
+                            i++;
+                        }
+                        Console.WriteLine("\nEnter a game number to get stats on that game. Enter '10' to see the current league table.");
+                        Console.WriteLine("Otherwise, press Enter to continue...");
+                        Console.Write("> ");
+                        try { num = int.Parse(Console.ReadLine()); } catch {num = -2;}
+                        if (num > -1 && num <= 9){
+                            Console.Clear();
+                            RecreateGameFromLog(gamesInWeek.ElementAt(num));
+                        }
+                        else if (num == 10) {
+                            ShowTable(season, teams, playerStats);
+                            Console.WriteLine("\nPress Enter to continue...");
+                            Console.ReadLine();
+                            Console.Clear();
+                        }
                     }
                 }
             }
 
-            /*for (int i = 0; i < teams.Count; i++){
-                for (int j = 0; j < teams.Count; j++){
-                    if (i != j){
-                        List<int> goals = SimulateGameInSeason(season[i].Team, season[j].Team, playerStats);
-                        foreach (Player p in season[i].Team.Players) playerStats.Find(pl => pl.Player == p).GamesPlayed++;
-                        foreach (Player p in season[j].Team.Players) playerStats.Find(pl => pl.Player == p).GamesPlayed++;
+            ShowTable(season, teams, playerStats);
+        }
 
-                        //Console.WriteLine(String.Format("{0} {1} - {2} {3}",season[i].Team.Name, goals[0], goals[1], season[j].Team.Name));
-                        if (goals[0] > goals[1]) {season[i].Wins++; season[j].Losses++;}
-                        else if (goals[0] < goals[1]) {season[j].Wins++; season[i].Losses++;}
-                        else {season[i].Draws++; season[j].Draws++;}
-
-                        season[i].GoalsFor += goals[0];
-                        season[j].GoalsFor += goals[1];
-
-                        season[i].GoalsAgainst += goals[1];
-                        season[j].GoalsAgainst += goals[0];
-                    }
-                }
-                //Console.WriteLine();
-            }*/
-
+        static void ShowTable(List<TeamSeasonStats> season, List<RotatableTeam> teams, List<PlayerSeasonStats> playerStats){
+            
             for (int k = 0; k < teams.Count; k++){
                 season[k].calculateGoalDiff();
                 season[k].calculatePoints();
@@ -1945,18 +2012,10 @@ namespace Footballv2
             PlayerSeasonStats topAssister = orderedStatsByAssists[0];
             Console.WriteLine("\nTOP SCORER: {0} ({1}): {2} goals",topScorer.Player.Name, topScorer.Team.Name, topScorer.GoalsScored);
             Console.WriteLine("TOP ASSISTER: {0} ({1}): {2} assists",topAssister.Player.Name, topAssister.Team.Name, topAssister.Assists);
-
-            /*for (int z = 0; z < 20; z++){
-                if (SortedList[z].Team.Name.Contains("Manchester") || SortedList[z].Team.Name.Contains("Bristol") || SortedList[z].Team.Name.Contains("Basingstoke")){
-                    Console.WriteLine("\nFOUND ONE OF THEM TEAMS");
-                    Console.WriteLine("FOUND ONE OF THEM TEAMS");
-                    Console.WriteLine("FOUND ONE OF THEM TEAMS");
-                    Console.WriteLine("FOUND ONE OF THEM TEAMS");
-                }
-            }*/
         }
 
         static int StartMenu(){
+            Console.Clear();
             int option = 1;
 
             Console.WriteLine("\nWelcome to Bad Football Simulator v. " + VERSION + "!\nOptions: ");
@@ -1997,6 +2056,21 @@ namespace Footballv2
             Console.WriteLine("10. Simulate Game (Step by Step)");
             Console.WriteLine("11. Simulate Game (Skip to End)");
             Console.WriteLine("12. Reroll Teams");
+            Console.Write("---\n> ");
+
+            try{option = int.Parse(Console.ReadLine());}catch{option=-1;}
+
+            return option;
+        }
+
+        static int EndGameMenuInSeason(bool before){
+            int option;
+
+            Console.WriteLine("0. Display Goalscorers");
+            Console.WriteLine("1. Display Game Stats");
+            Console.WriteLine("2. Display Player Ratings");
+            if (before) Console.WriteLine("3. Step Through Game Action by Action");
+            Console.WriteLine("9. Exit Game (Back to Games)");
             Console.Write("---\n> ");
 
             try{option = int.Parse(Console.ReadLine());}catch{option=-1;}
@@ -2612,23 +2686,8 @@ namespace Footballv2
                         break;
                 }
             }
-
-            /*
-            Console.WriteLine("\nGoalscorers:");
-            foreach (var g in goals) g.GoalInfo();
-
-            Console.WriteLine();
-            PrintStats(team1stats, team2stats);
-
-            Console.WriteLine();
-            PrintRatings(playersInGames1, playersInGames2, team1, team2);
-            */
         }
 
-        // TODO:
-        // Make it so that these season game simulations utilise bookings and red cards
-        // Maybe have some end of season stats display at the end, e.g. best player (highest average rating), top scorer (most goals), etc.
-        // Use ratings as well
         static Game SimulateGameInSeason(Team team1, Team team2, List<PlayerSeasonStats> playerStats = null){
             int team1_score = 0;
             int team2_score = 0;
@@ -3161,6 +3220,11 @@ namespace Footballv2
 
             game.Team1Stats = team1stats;
             game.Team2Stats = team2stats;
+            game.Goals = goals;
+            game.team1 = team1;
+            game.team2 = team2;
+            game.team1Players = playersInGames1;
+            game.team2Players = playersInGames2;
 
             List<int> score = new List<int>();
             score.Add(team1_score);
@@ -3748,19 +3812,6 @@ namespace Footballv2
             -------[GK]-------
             */
 
-            /*
-            Console.WriteLine("0. Names");
-            Console.WriteLine("1. Overall");
-            Console.WriteLine("2. Shirt Number");
-            Console.WriteLine("3. Pace");
-            Console.WriteLine("4. Finishing");
-            Console.WriteLine("5. Defence");
-            Console.WriteLine("6. Control");
-            Console.WriteLine("7. Mentality");
-            Console.WriteLine("8. Save Teams");
-            Console.WriteLine("9. Quit");
-            */ 
-
             switch (mode){
                 case 0:
                     Console.WriteLine("--------[9]-------\n------------------\n[7]----[10]---[11]\n------------------\n----[6]-----[8]---\n------------------\n[2]--[4]--[5]--[3]\n--------[1]-------");
@@ -4201,37 +4252,6 @@ namespace Footballv2
                     return GenerateNormal(50, 25);
             }
         }
-
-        /*
-        switch (p){
-            case Position.GK:
-                return rand.Next(0,50);
-            case Position.LB:
-                return rand.Next(40,80);
-            case Position.RB:
-                return rand.Next(40,80);
-            case Position.CB:
-                return rand.Next(30,70);
-            case Position.DM:
-                return rand.Next(30,75);
-            case Position.AM:
-                return rand.Next(50,85);
-            case Position.CM:
-                return rand.Next(45,75);
-            case Position.LM:
-                return rand.Next(55,90);
-            case Position.RM:
-                return rand.Next(55,90);
-            case Position.RW:
-                return rand.Next(55,95);
-            case Position.LW:
-                return rand.Next(55,95);
-            case Position.ST:
-                return rand.Next(50,80);
-            default:
-                return rand.Next(0,99);
-        }
-        */
 
         static int GenerateFinishing(Position p){
             var rand = new Random();
